@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { TranscriptParser, formatMemoryContent, isToolCapture, isTextCapture } from './capture.js';
 
 // Claude Code JSONL transcript format
-const sampleTranscript = `{"type":"assistant","message":{"content":[{"type":"text","text":"I'll help you add Redis caching. This is a substantial response with enough content to be captured as reasoning since we need at least 100 characters to make the cut."},{"type":"tool_use","id":"edit1","name":"Edit","input":{"file_path":"/src/cache.ts","old_string":"","new_string":"import Redis from 'ioredis';"}}]}}
+const sampleTranscript = `{"type":"assistant","message":{"content":[{"type":"text","text":"Redis caching is the best approach for this use case. The implementation requires creating a Redis client instance and connecting to the server. This is a substantial response with enough content to be captured as reasoning since we need at least 100 characters to make the cut."},{"type":"tool_use","id":"edit1","name":"Edit","input":{"file_path":"/src/cache.ts","old_string":"","new_string":"import Redis from 'ioredis';"}}]}}
 {"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"edit1","content":"File edited successfully"}]}}
 {"type":"assistant","message":{"content":[{"type":"tool_use","id":"read1","name":"Read","input":{"file_path":"/src/config.ts"}}]}}
 {"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"read1","content":"export const config = {}"}]}}
@@ -68,7 +68,10 @@ describe('TranscriptParser', () => {
   });
 
   it('should preserve tool input and output', () => {
-    const parser = new TranscriptParser({ captureReasoning: false });
+    const parser = new TranscriptParser({
+      toolConfig: { Edit: true },
+      captureReasoning: false
+    });
     const captures = parser.parseToolCaptures(sampleTranscript);
 
     const editCapture = captures[0];
@@ -94,7 +97,10 @@ not valid json
 {"type":"assistant","message":{"content":[{"type":"tool_use","id":"e1","name":"Edit","input":{"file_path":"test.ts"}}]}}
 {"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"e1","content":"success"}]}}`;
 
-    const parser = new TranscriptParser({ captureReasoning: false });
+    const parser = new TranscriptParser({
+      toolConfig: { Edit: true },
+      captureReasoning: false
+    });
     const captures = parser.parseToolCaptures(transcript);
 
     expect(captures.length).toBe(1);

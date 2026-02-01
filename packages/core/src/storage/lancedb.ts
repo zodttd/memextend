@@ -66,9 +66,12 @@ export class LanceDBStorage {
       return [];
     }
 
+    // LanceDB requires k > 0, so default 0 to a reasonable max
+    const effectiveLimit = limit > 0 ? limit : 100;
+
     const results = await this.table
       .vectorSearch(vector)
-      .limit(limit)
+      .limit(effectiveLimit)
       .toArray();
 
     return (results as Array<Record<string, unknown>>).map(row => ({
