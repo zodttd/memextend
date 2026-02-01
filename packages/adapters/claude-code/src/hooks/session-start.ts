@@ -73,8 +73,8 @@ async function main(): Promise<void> {
     const embedder = await createEmbedFunction(MODELS_PATH);
 
     const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery, {
-      defaultLimit: config.retrieval?.maxMemories ?? 10,
-      defaultRecentDays: config.retrieval?.recentDays ?? 7,
+      defaultLimit: config.retrieval?.maxMemories ?? 0,
+      defaultRecentDays: config.retrieval?.recentDays ?? 0,
     });
 
     // Ensure project is registered
@@ -97,11 +97,14 @@ async function main(): Promise<void> {
 
     // Get context for session
     // After compaction, we may want to inject more context since the previous context was lost
+    // 0 = unlimited, so use a high number for "unlimited"
+    const configLimit = config.retrieval?.maxMemories ?? 0;
+    const effectiveLimit = configLimit === 0 ? 1000 : configLimit; // 0 means unlimited, use high limit
     const maxMemories = isPostCompact
-      ? Math.min((config.retrieval?.maxMemories ?? 10) * 2, 20) // Double after compact, max 20
-      : config.retrieval?.maxMemories ?? 10;
+      ? Math.min(effectiveLimit * 2, configLimit === 0 ? 1000 : 100) // Double after compact
+      : effectiveLimit;
 
-    log('SessionStart', 'Retrieving memories', { maxMemories, isPostCompact });
+    log('SessionStart', 'Retrieving memories', { maxMemories, isPostCompact, configLimit });
 
     const context = await retriever.getContextForSession(projectId, {
       includeGlobal: config.retrieval?.includeGlobal ?? true,

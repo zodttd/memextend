@@ -199,8 +199,8 @@ async function main(): Promise<void> {
 
   try {
     const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery, {
-      defaultLimit: options.limit ?? 10,
-      defaultRecentDays: options.days ?? 7,
+      defaultLimit: options.limit ?? 0,
+      defaultRecentDays: options.days ?? 0,
     });
 
     // Ensure project is registered

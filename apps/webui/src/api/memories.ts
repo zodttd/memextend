@@ -74,6 +74,52 @@ memoriesRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/memories - Create a new memory
+memoriesRouter.post('/', async (req: Request, res: Response) => {
+  try {
+    const { content, projectId, type = 'manual' } = req.body;
+
+    if (!content || typeof content !== 'string') {
+      res.status(400).json({ error: 'Content is required and must be a string' });
+      return;
+    }
+
+    const { SQLiteStorage, LanceDBStorage, LocalEmbedding } = await import('@memextend/core');
+    const { randomUUID } = await import('crypto');
+
+    const sqlite = new SQLiteStorage(req.app.locals.dbPath);
+    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const embedder = await LocalEmbedding.create(req.app.locals.memextendDir);
+
+    const memoryId = randomUUID();
+    const memory = {
+      id: memoryId,
+      projectId: projectId || null,
+      content,
+      type: 'manual' as const,  // Always use 'manual' type for user-created memories
+      sourceTool: null,
+      createdAt: new Date().toISOString(),
+      sessionId: null,
+      metadata: null
+    };
+
+    // Save to SQLite
+    sqlite.insertMemory(memory);
+
+    // Generate and save embedding
+    const embedding = await embedder.embed(content);
+    await lancedb.insertVector(memoryId, embedding);
+
+    sqlite.close();
+    await lancedb.close();
+
+    res.status(201).json({ success: true, id: memoryId, memory });
+  } catch (error) {
+    console.error('Error creating memory:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 // GET /api/memories/:id - Get single memory
 memoriesRouter.get('/:id', async (req: Request, res: Response) => {
   try {

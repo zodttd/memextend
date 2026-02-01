@@ -502,6 +502,25 @@ function setupModal() {
   // Confirm delete
   document.getElementById('confirm-delete').addEventListener('click', deleteMemory);
 
+  // Create memory buttons
+  document.getElementById('create-memory-btn').addEventListener('click', () => openCreateModal(false));
+  document.getElementById('create-global-btn').addEventListener('click', () => openCreateModal(true));
+
+  // Create modal events
+  document.getElementById('create-cancel').addEventListener('click', closeModals);
+  document.getElementById('create-save').addEventListener('click', createMemory);
+
+  const createModal = document.getElementById('create-modal');
+  createModal.addEventListener('click', (e) => {
+    if (e.target === createModal) closeModals();
+  });
+
+  // Scope toggle in create modal
+  document.getElementById('create-scope').addEventListener('change', (e) => {
+    const projectGroup = document.getElementById('create-project-group');
+    projectGroup.style.display = e.target.value === 'project' ? 'block' : 'none';
+  });
+
   // Memory item clicks
   document.addEventListener('click', (e) => {
     const memoryItem = e.target.closest('.memory-item');
@@ -521,7 +540,7 @@ async function openMemoryModal(id) {
     document.getElementById('modal-type').className = `memory-type-badge ${memory.type}`;
     document.getElementById('modal-date').textContent = formatDate(memory.createdAt);
     document.getElementById('modal-content').value = memory.content;
-    document.getElementById('modal-source').textContent = memory.sourceTool || 'manual';
+    document.getElementById('modal-source').textContent = memory.sourceTool || (memory.type === 'reasoning' ? 'reasoning' : 'manual');
     document.getElementById('modal-project').textContent = memory.projectId || 'global';
 
     document.getElementById('memory-modal').classList.add('active');
@@ -533,7 +552,84 @@ async function openMemoryModal(id) {
 function closeModals() {
   document.getElementById('memory-modal').classList.remove('active');
   document.getElementById('delete-modal').classList.remove('active');
+  document.getElementById('create-modal').classList.remove('active');
   state.selectedMemory = null;
+}
+
+// Create memory modal
+function openCreateModal(isGlobal = false) {
+  const scopeSelect = document.getElementById('create-scope');
+  const projectGroup = document.getElementById('create-project-group');
+  const projectSelect = document.getElementById('create-project');
+  const contentArea = document.getElementById('create-content');
+
+  // Reset form
+  contentArea.value = '';
+
+  if (isGlobal) {
+    scopeSelect.value = 'global';
+    projectGroup.style.display = 'none';
+  } else {
+    scopeSelect.value = 'project';
+    projectGroup.style.display = 'block';
+  }
+
+  // Populate project dropdown
+  projectSelect.innerHTML = '';
+  if (state.projects && state.projects.length > 0) {
+    state.projects.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p.length > 40 ? p.slice(0, 40) + '...' : p;
+      projectSelect.appendChild(opt);
+    });
+  }
+
+  document.getElementById('create-modal').classList.add('active');
+}
+
+async function createMemory() {
+  const scope = document.getElementById('create-scope').value;
+  const content = document.getElementById('create-content').value.trim();
+
+  if (!content) {
+    showToast('Content cannot be empty', 'error');
+    return;
+  }
+
+  let projectId = null;
+  if (scope === 'project') {
+    projectId = document.getElementById('create-project').value;
+    if (!projectId) {
+      showToast('Please select a project', 'error');
+      return;
+    }
+  }
+
+  try {
+    await api('/memories', {
+      method: 'POST',
+      body: JSON.stringify({
+        content,
+        projectId,
+        type: projectId ? 'manual' : 'global'
+      })
+    });
+
+    showToast('Memory created successfully', 'success');
+    closeModals();
+
+    // Refresh current view
+    if (state.currentView === 'dashboard') {
+      loadDashboard();
+    } else if (state.currentView === 'memories') {
+      loadMemories();
+    } else if (state.currentView === 'global') {
+      loadGlobalProfiles();
+    }
+  } catch (error) {
+    showToast('Failed to create memory', 'error');
+  }
 }
 
 async function saveMemory() {
@@ -612,8 +708,8 @@ function populateSettingsForm(config) {
 
   // Retrieval settings
   document.getElementById('setting-auto-inject').checked = config.retrieval?.autoInject ?? true;
-  document.getElementById('setting-max-memories').value = config.retrieval?.maxMemories ?? 10;
-  document.getElementById('setting-recent-days').value = config.retrieval?.recentDays ?? 7;
+  document.getElementById('setting-max-memories').value = config.retrieval?.maxMemories ?? 0;
+  document.getElementById('setting-recent-days').value = config.retrieval?.recentDays ?? 0;
   document.getElementById('setting-include-global').checked = config.retrieval?.includeGlobal ?? true;
 
   // System settings
@@ -655,12 +751,12 @@ async function saveSettings() {
     showToast('Max tool output length must be between 100 and 50,000', 'error');
     return;
   }
-  if (config.retrieval.maxMemories < 1 || config.retrieval.maxMemories > 50) {
-    showToast('Max memories must be between 1 and 50', 'error');
+  if (config.retrieval.maxMemories < 0 || config.retrieval.maxMemories > 100) {
+    showToast('Max memories must be between 0 and 100 (0 = unlimited)', 'error');
     return;
   }
-  if (config.retrieval.recentDays < 1 || config.retrieval.recentDays > 90) {
-    showToast('Recent days must be between 1 and 90', 'error');
+  if (config.retrieval.recentDays < 0 || config.retrieval.recentDays > 365) {
+    showToast('Recent days must be between 0 and 365 (0 = unlimited)', 'error');
     return;
   }
 

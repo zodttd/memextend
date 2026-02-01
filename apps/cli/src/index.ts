@@ -13,6 +13,7 @@ import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { webuiCommand } from './commands/webui.js';
 import { uninstallCommand } from './commands/uninstall.js';
+import { saveCommand } from './commands/save.js';
 
 const program = new Command();
 
@@ -41,6 +42,14 @@ program
   .option('-g, --global', 'Search global profile only')
   .option('-l, --limit <number>', 'Maximum results', '10')
   .action(searchCommand);
+
+program
+  .command('save')
+  .description('Save a new memory')
+  .option('-g, --global', 'Save as global memory (available in all projects)')
+  .option('-p, --project <id>', 'Save to specific project')
+  .option('-m, --message <content>', 'Memory content (or enter interactively)')
+  .action(saveCommand);
 
 program
   .command('forget [memoryId]')

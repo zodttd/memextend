@@ -29,8 +29,8 @@ export class MemoryRetriever {
     this.lancedb = lancedb;
     this.embed = embed;
     this.options = {
-      defaultLimit: options.defaultLimit ?? 10,
-      defaultRecentDays: options.defaultRecentDays ?? 7,
+      defaultLimit: options.defaultLimit ?? 0, // 0 = unlimited
+      defaultRecentDays: options.defaultRecentDays ?? 0, // 0 = unlimited
       rrfK: options.rrfK ?? 60,
     };
   }

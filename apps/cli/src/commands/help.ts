@@ -62,6 +62,19 @@ ${chalk.yellow.bold('COMMANDS')}
       ${chalk.dim('$ memextend list')}
       ${chalk.dim('$ memextend list --project --limit 50')}
 
+  ${chalk.cyan('memextend save')}
+    Create a new memory manually.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-g, --global')}         Save as global memory (all projects)
+      ${chalk.dim('-p, --project <id>')}   Save to specific project
+      ${chalk.dim('-m, --message <text>')} Memory content (or enter interactively)
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend save --global -m "Prefer TypeScript over JavaScript"')}
+      ${chalk.dim('$ memextend save                 # Interactive mode')}
+      ${chalk.dim('$ memextend save -g              # Interactive global memory')}
+
   ${chalk.cyan('memextend search <query>')}
     Search memories using hybrid search (keyword + semantic).
 
@@ -146,10 +159,9 @@ ${chalk.yellow.bold('COMMANDS')}
     ${chalk.dim('Features:')}
       ${chalk.dim('• Dashboard with memory statistics')}
       ${chalk.dim('• View and filter all memories')}
-      ${chalk.dim('• Edit memory content')}
-      ${chalk.dim('• Delete memories')}
+      ${chalk.dim('• Create, edit, and delete memories')}
       ${chalk.dim('• Search with hybrid search')}
-      ${chalk.dim('• View global profiles')}
+      ${chalk.dim('• View and manage global profiles')}
       ${chalk.dim('• Configure capture and retrieval settings')}
 
     ${chalk.dim('Examples:')}
@@ -233,6 +245,30 @@ ${chalk.yellow('Examples:')}
   $ memextend status
   $ memextend status --project
   $ memextend status --check-embeddings
+`,
+    'save': `
+${chalk.cyan.bold('memextend save')}
+
+Create a new memory manually.
+
+${chalk.yellow('Options:')}
+  -g, --global         Save as global memory (available in all projects)
+  -p, --project <id>   Save to specific project
+  -m, --message <text> Memory content (or enter interactively)
+
+${chalk.yellow('Examples:')}
+  $ memextend save --global -m "Always use TypeScript"
+  $ memextend save                    # Interactive mode
+  $ memextend save -g                 # Interactive global memory
+
+${chalk.yellow('Interactive Mode:')}
+  When no message is provided, you can type content line by line.
+  Press Enter twice (empty line) to save, or Ctrl+C to cancel.
+
+${chalk.yellow('Project vs Global:')}
+  • Project memories are tied to a git repository
+  • Global memories are included in ALL sessions
+  • Without --global, saves to current project (detected from cwd)
 `,
     'search': `
 ${chalk.cyan.bold('memextend search <query>')}
@@ -333,9 +369,10 @@ ${chalk.yellow('Options:')}
 ${chalk.yellow('Features:')}
   • ${chalk.green('Dashboard')} - Memory statistics, activity chart, breakdowns
   • ${chalk.green('Memory List')} - View all memories with filtering
+  • ${chalk.green('Create')} - Add new memories (project or global)
   • ${chalk.green('Search')} - Hybrid search (FTS + vector)
   • ${chalk.green('Edit/Delete')} - Modify or remove memories
-  • ${chalk.green('Global Profiles')} - View cross-project preferences
+  • ${chalk.green('Global Profiles')} - Manage cross-project preferences
   • ${chalk.green('Settings')} - Configure capture and retrieval options
 
 ${chalk.yellow('Examples:')}
@@ -346,8 +383,8 @@ ${chalk.yellow('Examples:')}
 ${chalk.yellow('Access:')}
   Open http://localhost:3333 in your browser after starting.
 
-${chalk.dim('Note:')} The web UI is read-only for global profiles.
-Save global profiles using Claude's memextend_save_global tool.
+${chalk.dim('Note:')} Use the "+ New Memory" or "+ New Global Memory" buttons
+to create memories directly in the UI.
 `,
     'uninstall': `
 ${chalk.cyan.bold('memextend uninstall')}

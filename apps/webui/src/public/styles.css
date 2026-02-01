@@ -467,11 +467,35 @@ body::before {
   margin-bottom: 2rem;
 }
 
+.memories-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.memories-header-top h2 {
+  margin: 0;
+}
+
 .memories-header h2 {
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
 }
 
 .filters {

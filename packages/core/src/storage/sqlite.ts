@@ -125,20 +125,37 @@ export class SQLiteStorage {
     }));
   }
 
-  getRecentMemories(projectId: string | null, limit: number = 10, days: number = 7): Memory[] {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
+  getRecentMemories(projectId: string | null, limit: number = 0, days: number = 0): Memory[] {
+    // Build query conditionally based on whether days is 0 (unlimited)
+    let query = 'SELECT * FROM memories';
+    const params: any[] = [];
+    const conditions: string[] = [];
 
-    let query = 'SELECT * FROM memories WHERE created_at > ?';
-    const params: any[] = [cutoff.toISOString()];
+    // Days filter (0 = unlimited/no time constraint)
+    if (days > 0) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      conditions.push('created_at > ?');
+      params.push(cutoff.toISOString());
+    }
 
+    // Project filter
     if (projectId !== null) {
-      query += ' AND project_id = ?';
+      conditions.push('project_id = ?');
       params.push(projectId);
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ?';
-    params.push(limit);
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    // Limit (0 = unlimited)
+    if (limit > 0) {
+      query += ' LIMIT ?';
+      params.push(limit);
+    }
 
     const rows = this.db.prepare(query).all(...params) as any[];
     return rows.map(row => this.rowToMemory(row));

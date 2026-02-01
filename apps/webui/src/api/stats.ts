@@ -57,7 +57,7 @@ statsRouter.get('/', async (req: Request, res: Response) => {
       typeBreakdown[memory.type] = (typeBreakdown[memory.type] || 0) + 1;
 
       // Source tool
-      const source = memory.sourceTool || 'manual';
+      const source = memory.sourceTool || (memory.type === 'reasoning' ? 'reasoning' : 'manual');
       sourceBreakdown[source] = (sourceBreakdown[source] || 0) + 1;
 
       // Project

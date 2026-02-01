@@ -332,27 +332,24 @@ init_data() {
         cat > "$DATA_DIR/config.json" << 'EOF'
 {
   "version": 1,
-  "storage": {
-    "path": "~/.memextend",
-    "sqlite": "memextend.db",
-    "vectors": "vectors"
-  },
-  "embedding": {
-    "model": "nomic-embed-text-v1.5-GGUF",
-    "dimensions": 384
-  },
   "capture": {
-    "tools": ["Edit", "Write", "Bash", "Task"],
-    "skipTools": ["Read", "Glob", "Grep", "TodoWrite", "AskUserQuestion"],
-    "maxContentLength": 2000
+    "captureReasoning": true,
+    "maxReasoningLength": 10000,
+    "maxToolOutputLength": 2000,
+    "tools": {
+      "Edit": false,
+      "Write": false,
+      "Bash": false,
+      "Task": false
+    }
   },
   "retrieval": {
     "autoInject": true,
-    "maxMemories": 10,
-    "recentDays": 7,
+    "maxMemories": 0,
+    "recentDays": 0,
     "includeGlobal": true
   },
-  "adapters": {}
+  "debug": false
 }
 EOF
     fi
@@ -1035,7 +1032,10 @@ print_complete() {
     echo "    memextend search <q> -p      Search current project only"
     echo "    memextend search <q> -g      Search global profile only"
     echo ""
-    echo -e "  ${CYAN}Manage Memories:${NC}"
+    echo -e "  ${CYAN}Create & Manage Memories:${NC}"
+    echo "    memextend save               Create a memory interactively"
+    echo "    memextend save -g            Create global memory (all projects)"
+    echo "    memextend save -m \"text\"     Create with content directly"
     echo "    memextend edit <id>          Edit a memory's content"
     echo "    memextend forget <id>        Delete a specific memory"
     echo "    memextend forget --all       Delete ALL memories (with confirmation)"
@@ -1055,7 +1055,7 @@ print_complete() {
     echo ""
     echo -e "  ${CYAN}Help:${NC}"
     echo "    memextend help               Detailed help with examples"
-    echo "    memextend help <topic>       Help for: status, search, forget, edit, export, import, webui"
+    echo "    memextend help <topic>       Help for: status, save, search, forget, edit, export, import, webui, uninstall"
     echo "    memextend --help             Quick command reference"
     echo ""
     echo -e "${BOLD}Memory Scopes:${NC}"

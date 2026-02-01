@@ -82,7 +82,10 @@
       <!-- Memories View -->
       <section id="view-memories" class="view">
         <div class="memories-header">
-          <h2>All Memories</h2>
+          <div class="memories-header-top">
+            <h2>All Memories</h2>
+            <button id="create-memory-btn" class="btn btn-primary">+ New Memory</button>
+          </div>
           <div class="filters">
             <select id="filter-project" class="filter-select">
               <option value="">All Projects</option>
@@ -139,8 +142,13 @@
 
       <!-- Global Profile View -->
       <section id="view-global" class="view">
-        <h2>Global Profile</h2>
-        <p class="section-desc">Cross-project preferences and patterns that apply to all sessions.</p>
+        <div class="memories-header-top">
+          <div>
+            <h2>Global Profile</h2>
+            <p class="section-desc">Cross-project preferences and patterns that apply to all sessions.</p>
+          </div>
+          <button id="create-global-btn" class="btn btn-primary">+ New Global Memory</button>
+        </div>
         <div id="global-profiles" class="memory-list"></div>
       </section>
 
@@ -284,17 +292,17 @@
                 <div class="setting-row">
                   <div class="setting-info">
                     <label for="setting-max-memories">Max Memories</label>
-                    <span class="setting-hint">Maximum number of memories to inject per session</span>
+                    <span class="setting-hint">Maximum memories to inject per session (0 = unlimited)</span>
                   </div>
-                  <input type="number" id="setting-max-memories" class="setting-input" value="10" min="1" max="50">
+                  <input type="number" id="setting-max-memories" class="setting-input" value="0" min="0" max="100">
                 </div>
 
                 <div class="setting-row">
                   <div class="setting-info">
                     <label for="setting-recent-days">Recent Days</label>
-                    <span class="setting-hint">How many days back to look for recent memories</span>
+                    <span class="setting-hint">Days back to look for memories (0 = unlimited)</span>
                   </div>
-                  <input type="number" id="setting-recent-days" class="setting-input" value="7" min="1" max="90">
+                  <input type="number" id="setting-recent-days" class="setting-input" value="0" min="0" max="365">
                 </div>
 
                 <div class="setting-row">
@@ -372,6 +380,37 @@
           <button id="modal-save" class="btn btn-primary">Save Changes</button>
           <button id="modal-delete" class="btn btn-danger">Delete</button>
           <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Memory Modal -->
+    <div id="create-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Create Memory</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="create-scope">Scope</label>
+            <select id="create-scope" class="filter-select" style="width: 100%;">
+              <option value="global">Global (all projects)</option>
+              <option value="project">Current Project</option>
+            </select>
+          </div>
+          <div class="form-group" id="create-project-group" style="display: none;">
+            <label for="create-project">Project</label>
+            <select id="create-project" class="filter-select" style="width: 100%;"></select>
+          </div>
+          <div class="form-group">
+            <label for="create-content">Content</label>
+            <textarea id="create-content" class="content-editor" placeholder="Enter memory content..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="create-save" class="btn btn-primary">Save Memory</button>
+          <button id="create-cancel" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
     </div>

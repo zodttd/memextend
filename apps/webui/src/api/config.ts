@@ -46,8 +46,8 @@ const DEFAULT_CONFIG: MemextendConfig = {
   },
   retrieval: {
     autoInject: true,
-    maxMemories: 10,
-    recentDays: 7,
+    maxMemories: 0,
+    recentDays: 0,
     includeGlobal: true
   },
   debug: false

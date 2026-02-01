@@ -151,9 +151,15 @@ memextend search "prefs" --global   # Global profile only
 memextend search "api" --limit 20   # More results
 ```
 
-### Manage Memories
+### Create & Manage Memories
 
 ```bash
+# Create a new memory
+memextend save                      # Interactive mode (prompts for content)
+memextend save -g                   # Create global memory (all projects)
+memextend save -m "Use TypeScript"  # Create with content directly
+memextend save --global -m "Prefer tabs over spaces"
+
 # Edit a memory
 memextend edit <memory-id>          # Interactive editor
                                     # - Shows current content
@@ -196,9 +202,10 @@ memextend webui --host 0.0.0.0      # Bind to all interfaces
 The web UI provides:
 - **Dashboard** - Memory statistics, activity charts, type breakdowns
 - **Memory Browser** - Filter and paginate through all memories
+- **Create** - Add new project or global memories via "+ New Memory" buttons
 - **Search** - Hybrid search with semantic and keyword matching
 - **Edit/Delete** - Modify or remove individual memories
-- **Global Profiles** - View cross-project preferences
+- **Global Profiles** - View and manage cross-project preferences
 - **Settings** - Configure capture and retrieval options:
   - Toggle reasoning capture and individual tool capture
   - Set max content lengths for captures
@@ -226,9 +233,12 @@ After using `--keep-data`, you can reinstall with `memextend init` to reconnect 
 ```bash
 memextend help                      # Detailed help with examples
 memextend help status               # Help for status command
+memextend help save                 # Help for save command
 memextend help search               # Help for search command
 memextend help forget               # Help for forget command
 memextend help edit                 # Help for edit command
+memextend help export               # Help for export command
+memextend help import               # Help for import command
 memextend help webui                # Help for webui command
 memextend help uninstall            # Help for uninstall command
 memextend --help                    # Quick command reference
@@ -289,8 +299,8 @@ Config file: `~/.memextend/config.json`
   },
   "retrieval": {
     "autoInject": true,
-    "maxMemories": 10,
-    "recentDays": 7,
+    "maxMemories": 0,
+    "recentDays": 0,
     "includeGlobal": true
   },
   "debug": false
@@ -314,8 +324,8 @@ Config file: `~/.memextend/config.json`
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `autoInject` | `true` | Auto-inject memories at session start |
-| `maxMemories` | `10` | Maximum memories to inject per session |
-| `recentDays` | `7` | Days to look back for recent memories |
+| `maxMemories` | `0` | Maximum memories to inject (0 = unlimited) |
+| `recentDays` | `0` | Days to look back for memories (0 = unlimited) |
 | `includeGlobal` | `true` | Include global profile in injection |
 
 All settings can be configured via the WebUI Settings page (`memextend webui`).
