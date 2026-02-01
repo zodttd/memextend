@@ -20,7 +20,7 @@ const program = new Command();
 program
   .name('memextend')
   .description('Extend your AI coding assistant\'s memory. Free, local, private.')
-  .version('0.1.9');
+  .version('0.2.0');
 
 program
   .command('init')
