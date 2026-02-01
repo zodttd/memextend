@@ -315,6 +315,7 @@ install_memextend() {
         cd "$INSTALL_DIR/repo"
         git fetch origin --quiet
         git reset --hard origin/main --quiet
+        git clean -fd --quiet
         success "Repository updated"
     else
         info "Cloning repository..."
