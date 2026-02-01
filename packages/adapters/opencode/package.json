@@ -1,6 +1,6 @@
 {
   "name": "@memextend/opencode",
-  "version": "0.3.19",
+  "version": "0.3.3",
   "description": "OpenCode adapter for memextend - MCP server for anomalyco/opencode AI memory",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "setup": "node dist/setup.js"
   },
   "dependencies": {
-    "@memextend/core": "^0.3.19",
+    "@memextend/core": "^0.3.3",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
