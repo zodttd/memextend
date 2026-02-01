@@ -13,6 +13,9 @@ export class SQLiteStorage {
     // Set busy timeout to wait for locks instead of failing immediately
     // Critical for multiple MCP processes accessing the same DB
     this.db.pragma('busy_timeout = 5000');
+    // Enable trusted_schema for FTS5 triggers to work
+    // Without this, INSERT triggers on memories_fts fail with "unsafe use of virtual table"
+    this.db.pragma('trusted_schema = ON');
     this.initialize();
   }
 
