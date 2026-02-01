@@ -158,17 +158,11 @@ async function startWebui(options: WebuiOptions): Promise<void> {
 async function runBackground(port: number, host: string): Promise<void> {
   // Get path to this script for spawning
   const cliPath = join(__dirname, '..', 'index.js');
-  const logFile = join(MEMEXTEND_DIR, 'webui.log');
-
-  // Open log file for stdout/stderr (truncate on each start to prevent growth)
-  const { openSync } = await import('fs');
-  const out = openSync(logFile, 'w');
-  const err = openSync(logFile, 'w');
 
   // Spawn a detached process running webui in foreground mode
   const child = spawn('node', [cliPath, 'webui', '--foreground', '--port', String(port), '--host', host], {
     detached: true,
-    stdio: ['ignore', out, err],
+    stdio: 'ignore',
     cwd: join(__dirname, '..', '..'),  // Set cwd to apps/cli/dist
     env: { ...process.env }
   });
