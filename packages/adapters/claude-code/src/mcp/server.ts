@@ -128,7 +128,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'memextend_search',
-        description: 'Search through your memories. Use this to recall past work, decisions, or context.',
+        description: 'Search through your memories. Use this to: (1) recall past work, decisions, or context, (2) understand project history and previous approaches, (3) debug issues by finding related past attempts and solutions, (4) get context when returning to a project. Always search before asking the user about project history.',
         inputSchema: {
           type: 'object',
           properties: {
