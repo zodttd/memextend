@@ -6,7 +6,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { SqliteVecStorage } from '@memextend/core';
+import { SQLiteVecStorage } from '@memextend/core';
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
@@ -53,15 +53,14 @@ export async function optimizeCommand(): Promise<void> {
   const spinner = ora('Optimizing vector storage...').start();
 
   try {
-    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+    const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
     const stats = await vectorStore.optimize();
 
     spinner.stop();
 
     if (stats) {
       console.log(chalk.green('\nOptimization complete!'));
-      console.log(`  Files compacted: ${stats.compacted}`);
-      console.log(`  Old versions pruned: ${stats.pruned}`);
+      console.log('  Database vacuumed and defragmented');
     } else {
       console.log(chalk.yellow('\nNo optimization needed or table is empty.'));
     }

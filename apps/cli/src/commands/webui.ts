@@ -228,7 +228,7 @@ async function startInlineServer(port: number, host: string): Promise<void> {
   const fs = await import('fs');
   const url = await import('url');
 
-  const { SQLiteStorage, SqliteVecStorage, MemoryRetriever, createEmbedFunction, isModelAvailable } = await import('@memextend/core');
+  const { SQLiteStorage, SQLiteVecStorage, MemoryRetriever, createEmbedFunction, isModelAvailable } = await import('@memextend/core');
 
   const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
   const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
@@ -334,7 +334,7 @@ async function startInlineServer(port: number, host: string): Promise<void> {
           const memories = sqlite.getAllMemories(undefined, 10000);
           const globalProfiles = sqlite.getGlobalProfiles(100);
 
-          const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+          const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
           const vectorCount = await vectorStore.getVectorCount();
           await vectorStore.close();
 
@@ -423,7 +423,7 @@ async function startInlineServer(port: number, host: string): Promise<void> {
             return;
           }
 
-          const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+          const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
           const embedder = await createEmbedFunction(MODELS_PATH);
           const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
 

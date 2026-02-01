@@ -9,7 +9,7 @@ export interface VectorSearchResult {
   score: number;
 }
 
-export class SqliteVecStorage {
+export class SQLiteVecStorage {
   private db: Database.Database;
   private readonly tableName = 'memory_vectors';
   private readonly dimensions = 384;
@@ -18,7 +18,7 @@ export class SqliteVecStorage {
     this.db = db;
   }
 
-  static async create(dbPath: string): Promise<SqliteVecStorage> {
+  static async create(dbPath: string): Promise<SQLiteVecStorage> {
     // Handle both directory paths (legacy directory format) and file paths
     // If path ends with 'vectors' (directory), convert to vectors.db file
     let actualPath = dbPath;
@@ -31,7 +31,7 @@ export class SqliteVecStorage {
     // Load sqlite-vec extension
     sqliteVec.load(db);
 
-    const storage = new SqliteVecStorage(db);
+    const storage = new SQLiteVecStorage(db);
     storage.initialize();
     return storage;
   }

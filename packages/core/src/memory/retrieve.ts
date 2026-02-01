@@ -7,7 +7,7 @@ import type { Memory, SearchResult, RetrievalOptions, GlobalProfile } from './ty
 
 export type EmbedFunction = (text: string) => Promise<number[]>;
 
-// Interface for vector storage - works with SqliteVecStorage or any compatible implementation
+// Interface for vector storage - works with SQLiteVecStorage or any compatible implementation
 export interface VectorStorage {
   search(vector: number[], limit?: number): Promise<VectorSearchResult[]>;
   insertVector(id: string, vector: number[]): Promise<void>;

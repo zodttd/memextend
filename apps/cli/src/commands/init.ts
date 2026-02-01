@@ -138,8 +138,8 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
     // Step 3: Initialize vector database (sqlite-vec)
     spinner.start('Initializing vector database...');
-    const { SqliteVecStorage } = await import('@memextend/core');
-    const vectors = await SqliteVecStorage.create(VECTORS_PATH);
+    const { SQLiteVecStorage } = await import('@memextend/core');
+    const vectors = await SQLiteVecStorage.create(VECTORS_PATH);
     await vectors.close();
     spinner.succeed('Initialized vector database');
 

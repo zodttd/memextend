@@ -114,9 +114,9 @@ export async function importCommand(filePath: string, options: ImportOptions): P
     }
 
     // Import data
-    const { SQLiteStorage, SqliteVecStorage, createEmbedFunction } = await import('@memextend/core');
+    const { SQLiteStorage, SQLiteVecStorage, createEmbedFunction } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+    const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
     const embedder = await createEmbedFunction(MODELS_PATH);
 
     let importedMemories = 0;

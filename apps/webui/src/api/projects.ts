@@ -115,9 +115,9 @@ projectsRouter.get('/:id/memories', async (req: Request, res: Response) => {
 // DELETE /api/projects/:id - Delete a project and all its memories
 projectsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { SQLiteStorage, SqliteVecStorage } = await import('@memextend/core');
+    const { SQLiteStorage, SQLiteVecStorage } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const vectorStore = await SqliteVecStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await SQLiteVecStorage.create(req.app.locals.vectorsPath);
 
     // Get all memory IDs for this project before deleting (for vector cleanup)
     const memories = sqlite.getAllMemories(req.params.id, 100000);

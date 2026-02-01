@@ -10,7 +10,7 @@ import { execSync } from 'child_process';
 
 import {
   SQLiteStorage,
-  SqliteVecStorage,
+  SQLiteVecStorage,
   TranscriptParser,
   formatCaptureContent,
   isTextCapture,
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+    const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
 
     // Ensure project is registered
     const project = sqlite.getProject(projectId);
@@ -242,7 +242,7 @@ function outputResult(result: HookOutput): void {
  */
 async function deduplicateStoredMemories(
   sqlite: SQLiteStorage,
-  vectorStore: SqliteVecStorage,
+  vectorStore: SQLiteVecStorage,
   projectId: string,
   threshold: number
 ): Promise<string[]> {

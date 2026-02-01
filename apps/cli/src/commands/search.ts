@@ -24,10 +24,10 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
   }
 
   try {
-    const { SQLiteStorage, SqliteVecStorage, MemoryRetriever, createEmbedFunction, getProjectId } = await import('@memextend/core');
+    const { SQLiteStorage, SQLiteVecStorage, MemoryRetriever, createEmbedFunction, getProjectId } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+    const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
 
     // Create embedding function (uses real model if available)
     const embedder = await createEmbedFunction(MODELS_PATH);

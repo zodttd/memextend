@@ -14,7 +14,7 @@ import { existsSync } from 'fs';
 import { join, basename } from 'path';
 import { homedir } from 'os';
 
-import { SQLiteStorage, SqliteVecStorage, MemoryRetriever, createEmbedFunction, formatContextForInjection, getProjectId } from '@memextend/core';
+import { SQLiteStorage, SQLiteVecStorage, MemoryRetriever, createEmbedFunction, formatContextForInjection, getProjectId } from '@memextend/core';
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
@@ -23,13 +23,13 @@ const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
 
 // Lazy-loaded storage instances
 let sqlite: SQLiteStorage | null = null;
-let vectorStore: SqliteVecStorage | null = null;
+let vectorStore: SQLiteVecStorage | null = null;
 let retriever: MemoryRetriever | null = null;
 let embedder: Awaited<ReturnType<typeof createEmbedFunction>> | null = null;
 
 async function getStorage(): Promise<{
   sqlite: SQLiteStorage;
-  vectorStore: SqliteVecStorage;
+  vectorStore: SQLiteVecStorage;
   retriever: MemoryRetriever;
   embedder: Awaited<ReturnType<typeof createEmbedFunction>>;
 }> {
@@ -39,7 +39,7 @@ async function getStorage(): Promise<{
     }
 
     sqlite = new SQLiteStorage(DB_PATH);
-    vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
+    vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
     embedder = await createEmbedFunction(MODELS_PATH);
     retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
   }

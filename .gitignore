@@ -3,7 +3,7 @@ dist/
 *.log
 .DS_Store
 *.sqlite
-*.lance/
+vectors.db
 .env
 .env.local
 coverage/

@@ -396,8 +396,8 @@ EOF
     " 2>/dev/null || true
 
     node -e "
-        const { SqliteVecStorage } = require('$INSTALL_DIR/repo/packages/core/dist/storage/sqlite-vec.js');
-        SqliteVecStorage.create('$DATA_DIR/vectors.db').then(db => {
+        const { SQLiteVecStorage } = require('$INSTALL_DIR/repo/packages/core/dist/storage/sqlite-vec.js');
+        SQLiteVecStorage.create('$DATA_DIR/vectors.db').then(db => {
             db.close();
             console.log('Vector database initialized');
         });

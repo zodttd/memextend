@@ -7,13 +7,13 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { MemoryRetriever, formatContextForInjection } from './retrieve.js';
 import { SQLiteStorage } from '../storage/sqlite.js';
-import { SqliteVecStorage } from '../storage/sqlite-vec.js';
+import { SQLiteVecStorage } from '../storage/sqlite-vec.js';
 import type { Memory, GlobalProfile } from './types.js';
 
 describe('MemoryRetriever', () => {
   let tempDir: string;
   let sqlite: SQLiteStorage;
-  let vectorStore: SqliteVecStorage;
+  let vectorStore: SQLiteVecStorage;
   let retriever: MemoryRetriever;
 
   // Mock embedding function for tests
@@ -30,7 +30,7 @@ describe('MemoryRetriever', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'memextend-retrieve-test-'));
     sqlite = new SQLiteStorage(join(tempDir, 'test.db'));
-    vectorStore = await SqliteVecStorage.create(join(tempDir, 'vectors.db'));
+    vectorStore = await SQLiteVecStorage.create(join(tempDir, 'vectors.db'));
     retriever = new MemoryRetriever(sqlite, vectorStore, mockEmbed);
 
     // Seed test data
@@ -151,7 +151,7 @@ describe('formatContextForInjection', () => {
 // Helper functions
 async function seedTestMemories(
   sqlite: SQLiteStorage,
-  vectorStore: SqliteVecStorage,
+  vectorStore: SQLiteVecStorage,
   embed: (text: string) => Promise<number[]>
 ) {
   const memories: Memory[] = [
