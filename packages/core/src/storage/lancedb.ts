@@ -135,7 +135,14 @@ export class LanceDBStorage {
     if (!this.table) return null;
 
     try {
-      const stats = await this.table.optimize();
+      // The optimize method exists in the native module but isn't in TypeScript types
+      const table = this.table as unknown as {
+        optimize(): Promise<{
+          compaction?: { filesRemoved?: number };
+          prune?: { versionsRemoved?: number };
+        }>;
+      };
+      const stats = await table.optimize();
       return {
         compacted: stats?.compaction?.filesRemoved ?? 0,
         pruned: stats?.prune?.versionsRemoved ?? 0,

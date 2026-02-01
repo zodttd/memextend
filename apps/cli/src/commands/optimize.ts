@@ -1,7 +1,7 @@
 // apps/cli/src/commands/optimize.ts
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
-import { existsSync, statSync } from 'fs';
+import { existsSync, statSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import chalk from 'chalk';
@@ -23,7 +23,7 @@ function getDirectorySize(dirPath: string): number {
   if (!existsSync(dirPath)) return 0;
 
   let totalSize = 0;
-  const files = require('fs').readdirSync(dirPath, { withFileTypes: true });
+  const files = readdirSync(dirPath, { withFileTypes: true });
 
   for (const file of files) {
     const filePath = join(dirPath, file.name);
