@@ -1,8 +1,8 @@
 {
   "name": "@memextend/opencode",
   "version": "0.1.0",
-  "description": "OpenCode adapter for memextend - provides memory integration via MCP for anomalyco/opencode",
-  "author": "ZodTTD LLC",
+  "description": "OpenCode adapter for memextend - MCP server for anomalyco/opencode AI memory",
+  "author": "ZodTTD LLC <info@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -27,25 +27,40 @@
     "setup": "node dist/setup.js"
   },
   "dependencies": {
-    "@memextend/core": "*",
+    "@memextend/core": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.20.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zodttd/memextend.git",
+    "directory": "packages/adapters/opencode"
+  },
+  "bugs": {
+    "url": "https://github.com/zodttd/memextend/issues"
+  },
+  "homepage": "https://github.com/zodttd/memextend#readme",
   "keywords": [
+    "memextend",
     "opencode",
     "anomalyco",
     "mcp",
     "model-context-protocol",
     "ai-memory",
-    "memextend",
     "ai-coding",
     "coding-agent"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/zodttd/memextend.git",
-    "directory": "packages/adapters/opencode"
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

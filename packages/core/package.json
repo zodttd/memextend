@@ -1,8 +1,8 @@
 {
   "name": "@memextend/core",
   "version": "0.1.0",
-  "description": "Core memory storage and retrieval for memextend",
-  "author": "ZodTTD LLC",
+  "description": "Core memory storage and retrieval for memextend - local AI memory extension",
+  "author": "ZodTTD LLC <info@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -27,5 +27,35 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",
     "@types/uuid": "^9.0.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zodttd/memextend.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/zodttd/memextend/issues"
+  },
+  "homepage": "https://github.com/zodttd/memextend#readme",
+  "keywords": [
+    "memextend",
+    "ai-memory",
+    "llm",
+    "claude",
+    "vector-search",
+    "sqlite",
+    "lancedb",
+    "embeddings",
+    "semantic-search"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

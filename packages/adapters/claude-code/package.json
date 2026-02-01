@@ -1,8 +1,8 @@
 {
   "name": "@memextend/claude-code",
   "version": "0.1.0",
-  "description": "Claude Code adapter for memextend",
-  "author": "ZodTTD LLC",
+  "description": "Claude Code adapter for memextend - hooks and MCP server for persistent AI memory",
+  "author": "ZodTTD LLC <info@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,37 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@memextend/core": "*",
+    "@memextend/core": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zodttd/memextend.git",
+    "directory": "packages/adapters/claude-code"
+  },
+  "bugs": {
+    "url": "https://github.com/zodttd/memextend/issues"
+  },
+  "homepage": "https://github.com/zodttd/memextend#readme",
+  "keywords": [
+    "memextend",
+    "claude-code",
+    "claude",
+    "anthropic",
+    "ai-memory",
+    "mcp",
+    "model-context-protocol",
+    "hooks"
+  ],
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

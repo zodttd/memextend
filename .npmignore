@@ -1,0 +1,30 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Test files
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__/
+test/
+tests/
+coverage/
+
+# Development
+.git/
+.github/
+.vscode/
+.idea/
+*.log
+*.local
+.env*
+
+# Build artifacts we don't need
+node_modules/
+*.tsbuildinfo
+
+# macOS
+.DS_Store
