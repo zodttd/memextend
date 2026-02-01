@@ -218,6 +218,39 @@ export class SQLiteStorage {
     };
   }
 
+  /**
+   * Find a project by name (case-insensitive).
+   * Returns the first matching project, preferring projects with a path set.
+   */
+  getProjectByName(name: string): Project | null {
+    // First try to find a project with a path (created by hooks)
+    const rowWithPath = this.db.prepare(
+      'SELECT * FROM projects WHERE LOWER(name) = LOWER(?) AND path != \'\' ORDER BY created_at ASC LIMIT 1'
+    ).get(name) as any;
+
+    if (rowWithPath) {
+      return {
+        id: rowWithPath.id,
+        name: rowWithPath.name,
+        path: rowWithPath.path,
+        createdAt: rowWithPath.created_at
+      };
+    }
+
+    // Fall back to any project with that name
+    const row = this.db.prepare(
+      'SELECT * FROM projects WHERE LOWER(name) = LOWER(?) ORDER BY created_at ASC LIMIT 1'
+    ).get(name) as any;
+
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      path: row.path,
+      createdAt: row.created_at
+    };
+  }
+
   // Global profile methods
   insertGlobalProfile(profile: GlobalProfile): void {
     const stmt = this.db.prepare(`

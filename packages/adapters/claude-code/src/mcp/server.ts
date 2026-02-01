@@ -246,13 +246,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           return { content: [{ type: 'text', text: 'projectId is required. Please provide the project/repo name (e.g., "memextend", "my-app").' }], isError: true };
         }
 
-        // Use the project name as-is for display, and create a hash-based ID for storage
         const projectName = projectIdArg.trim();
-        const projectId = createHash('sha256').update(projectName.toLowerCase()).digest('hex').slice(0, 16);
 
-        // Ensure project is registered
-        const existing = sqlite.getProject(projectId);
-        if (!existing) {
+        // Try to find existing project by name first (to match hook-created projects)
+        const existingByName = sqlite.getProjectByName(projectName);
+
+        let projectId: string;
+        if (existingByName) {
+          // Use the existing project's ID (matches what hooks created)
+          projectId = existingByName.id;
+        } else {
+          // Create new project with hash-based ID
+          projectId = createHash('sha256').update(projectName.toLowerCase()).digest('hex').slice(0, 16);
           sqlite.insertProject({
             id: projectId,
             name: projectName,
