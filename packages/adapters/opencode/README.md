@@ -173,7 +173,22 @@ Then interact with memextend through natural language:
 > Show me the memextend status
 ```
 
-**CRITICAL: If you can't find something, search your memories.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously. Always check memories as a last resort before telling the user you can't find something.
+### When to Search Memory
+
+**ALWAYS search memories before asking the user about project history.** Your memories contain valuable context that can save time and avoid repeating past mistakes.
+
+**CRITICAL: If you can't find something, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
+
+**Search memories when:**
+- Starting work on a project you've worked on before
+- The user references past decisions ("like we did before", "as discussed")
+- You need context about project architecture or conventions
+- **Debugging issues** - search for previous attempts, fixes, and what was tried before
+- **Understanding project history** - how features were implemented and why
+- The current approach isn't working - past memories may reveal what was already tried
+- You're unsure about project conventions or patterns
+- **You can't find a file, function, or pattern** - it may have been discussed or located in a previous session
+- **Before giving up** - always check memories as a last resort before telling the user you can't find something
 
 ## How It Works
 
