@@ -84,30 +84,44 @@ const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
 const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
 
-// Lazy-loaded storage instances
-let sqlite: SQLiteStorage | null = null;
-let vectorStore: SQLiteVecStorage | null = null;
-let retriever: MemoryRetriever | null = null;
-let embedder: Awaited<ReturnType<typeof createEmbedFunction>> | null = null;
+// Embedder is expensive to load, keep it cached
+let cachedEmbedder: Awaited<ReturnType<typeof createEmbedFunction>> | null = null;
 
+async function getEmbedder(): Promise<Awaited<ReturnType<typeof createEmbedFunction>>> {
+  if (!cachedEmbedder) {
+    cachedEmbedder = await createEmbedFunction(MODELS_PATH);
+  }
+  return cachedEmbedder;
+}
+
+// Open fresh DB connections for each operation to avoid blocking stop hook
+// The embedder is cached since it's expensive to load
 async function getStorage(): Promise<{
   sqlite: SQLiteStorage;
   vectorStore: SQLiteVecStorage;
   retriever: MemoryRetriever;
   embedder: Awaited<ReturnType<typeof createEmbedFunction>>;
+  close: () => Promise<void>;
 }> {
-  if (!sqlite || !vectorStore || !retriever || !embedder) {
-    if (!existsSync(DB_PATH)) {
-      throw new Error('memextend not initialized. Run `memextend init` first.');
-    }
-
-    sqlite = new SQLiteStorage(DB_PATH);
-    vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
-    embedder = await createEmbedFunction(MODELS_PATH);
-    retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
+  if (!existsSync(DB_PATH)) {
+    throw new Error('memextend not initialized. Run `memextend init` first.');
   }
 
-  return { sqlite, vectorStore, retriever, embedder };
+  const sqlite = new SQLiteStorage(DB_PATH);
+  const vectorStore = await SQLiteVecStorage.create(VECTORS_PATH);
+  const embedder = await getEmbedder();
+  const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
+
+  return {
+    sqlite,
+    vectorStore,
+    retriever,
+    embedder,
+    close: async () => {
+      sqlite.close();
+      await vectorStore.close();
+    }
+  };
 }
 
 // Version injected at build time by esbuild
@@ -214,10 +228,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
+  // Get storage and ensure we close it after each operation
+  // This prevents blocking the stop hook from writing
+  const storage = await getStorage();
+
   try {
     switch (name) {
       case 'memextend_search': {
-        const { retriever } = await getStorage();
+        const { retriever } = storage;
         const query = args?.query as string;
         const limit = (args?.limit as number) ?? 5;
 
@@ -240,7 +258,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_save': {
-        const { sqlite, vectorStore, embedder } = await getStorage();
+        const { sqlite, vectorStore, embedder } = storage;
         const content = args?.content as string;
         const projectIdArg = args?.projectId as string;
 
@@ -296,7 +314,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_save_global': {
-        const { sqlite } = await getStorage();
+        const { sqlite } = storage;
         const content = args?.content as string;
         const type = args?.type as 'preference' | 'pattern' | 'fact';
 
@@ -320,7 +338,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_forget': {
-        const { sqlite, vectorStore } = await getStorage();
+        const { sqlite, vectorStore } = storage;
         const memoryId = args?.memoryId as string;
 
         const deleted = sqlite.deleteMemory(memoryId);
@@ -334,7 +352,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_status': {
-        const { sqlite, vectorStore, embedder } = await getStorage();
+        const { sqlite, vectorStore, embedder } = storage;
         const memoryCount = sqlite.getMemoryCount();
         const vectorCount = await vectorStore.getVectorCount();
 
@@ -369,6 +387,10 @@ Project Detection:
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
+  } finally {
+    // Always close storage to release DB locks
+    // This allows the stop hook to write without "readonly database" errors
+    await storage.close();
   }
 });
 
