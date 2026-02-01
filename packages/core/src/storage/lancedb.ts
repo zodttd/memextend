@@ -13,6 +13,8 @@ export class LanceDBStorage {
   private table: lancedb.Table | null = null;
   private readonly tableName = 'memories';
   private readonly dimensions = 384;
+  private insertCount = 0;
+  private readonly autoOptimizeThreshold = 50; // Optimize after every 50 inserts
 
   private constructor(db: lancedb.Connection) {
     this.db = db;
@@ -45,6 +47,13 @@ export class LanceDBStorage {
     } else {
       await this.table.add(data);
     }
+
+    // Auto-optimize to prevent version bloat
+    this.insertCount++;
+    if (this.insertCount >= this.autoOptimizeThreshold) {
+      await this.optimize();
+      this.insertCount = 0;
+    }
   }
 
   async insertVectors(items: Array<{ id: string; vector: number[] }>): Promise<void> {
@@ -58,6 +67,13 @@ export class LanceDBStorage {
       this.table = await this.db.createTable(this.tableName, items);
     } else {
       await this.table.add(items);
+    }
+
+    // Auto-optimize to prevent version bloat
+    this.insertCount += items.length;
+    if (this.insertCount >= this.autoOptimizeThreshold) {
+      await this.optimize();
+      this.insertCount = 0;
     }
   }
 

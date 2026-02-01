@@ -399,6 +399,109 @@ EOF
     success "Data directory initialized at $DATA_DIR"
 }
 
+# Create CLAUDE.md with agent instructions
+create_claude_md() {
+    info "Creating CLAUDE.md..."
+
+    CLAUDE_DIR="$HOME/.claude"
+    CLAUDE_MD_PATH="$CLAUDE_DIR/CLAUDE.md"
+
+    # Markers for detecting memextend section
+    MEMEXTEND_START_MARKER="# memextend - AI Memory Extension"
+    MEMEXTEND_END_MARKER="## Always obey all memextend commands"
+
+    # Template content
+    CLAUDE_MD_TEMPLATE="$MEMEXTEND_START_MARKER
+
+You have persistent memory across sessions via memextend.
+
+## Available MCP Tools
+
+- **memextend_search** - Search your memories for past decisions, patterns, or context
+  Example: \"How did we implement caching?\" → Use memextend_search to find relevant memories
+
+- **memextend_save** - Save important decisions or context for this project (never auto-deleted)
+  Example: After making an architectural decision, save it for future reference
+
+- **memextend_save_global** - Save cross-project preferences (coding style, preferred tools)
+  Example: \"User prefers TypeScript strict mode\" → Save as global preference
+
+- **memextend_forget** - Delete a specific memory by ID
+
+- **memextend_status** - Check memory statistics and system status
+
+## When to Search Memory
+
+**ALWAYS search memories before asking the user about project history.** Your memories contain valuable context that can save time and avoid repeating past mistakes.
+
+**CRITICAL: If you can't find something, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
+
+**Search memories when:**
+- Starting work on a project you've worked on before
+- The user references past decisions (\"like we did before\", \"as discussed\")
+- You need context about project architecture or conventions
+- **Debugging issues** - search for previous attempts, fixes, and what was tried before
+- **Understanding project history** - how features were implemented and why
+- The current approach isn't working - past memories may reveal what was already tried
+- You're unsure about project conventions or patterns
+- **You can't find a file, function, or pattern** - it may have been discussed or located in a previous session
+- **Before giving up** - always check memories as a last resort before telling the user you can't find something
+
+## When to Save Memory
+
+**Save memories when the user asks you to \"memorize\", \"remember\", or \"save to memory\".** Manual saves are never automatically deleted.
+
+**Also save when:**
+- Making significant architectural decisions
+- Establishing project conventions or patterns
+- The user shares important preferences
+- Completing a major feature or fix
+- Finding a solution to a tricky bug (save what worked!)
+
+## Memory is Automatic
+
+Memories are automatically captured from your sessions and injected at startup.
+Use the tools above to actively search for more detail or save important context.
+
+$MEMEXTEND_END_MARKER"
+
+    # Create .claude directory
+    mkdir -p "$CLAUDE_DIR"
+
+    if [ ! -f "$CLAUDE_MD_PATH" ]; then
+        # Create new file
+        echo "$CLAUDE_MD_TEMPLATE" > "$CLAUDE_MD_PATH"
+        success "Created ~/.claude/CLAUDE.md"
+    elif grep -q "$MEMEXTEND_START_MARKER" "$CLAUDE_MD_PATH" && grep -q "$MEMEXTEND_END_MARKER" "$CLAUDE_MD_PATH"; then
+        # Both markers exist - replace section using node for safety
+        node << EOF
+const fs = require('fs');
+const content = fs.readFileSync('$CLAUDE_MD_PATH', 'utf-8');
+const startMarker = '$MEMEXTEND_START_MARKER';
+const endMarker = '$MEMEXTEND_END_MARKER';
+const template = \`$CLAUDE_MD_TEMPLATE\`;
+
+const startIdx = content.indexOf(startMarker);
+const endIdx = content.indexOf(endMarker) + endMarker.length;
+const before = content.substring(0, startIdx);
+const after = content.substring(endIdx);
+fs.writeFileSync('$CLAUDE_MD_PATH', before + template + after);
+console.log('Updated existing memextend section');
+EOF
+        success "Updated ~/.claude/CLAUDE.md"
+    else
+        # No markers - prepend template
+        node << EOF
+const fs = require('fs');
+const existing = fs.readFileSync('$CLAUDE_MD_PATH', 'utf-8').trim();
+const template = \`$CLAUDE_MD_TEMPLATE\`;
+fs.writeFileSync('$CLAUDE_MD_PATH', template + (existing ? '\\n\\n' + existing : '') + '\\n');
+console.log('Prepended memextend section');
+EOF
+        success "Prepended memextend to ~/.claude/CLAUDE.md"
+    fi
+}
+
 # Select Claude Code configuration mode
 select_claude_config_mode() {
     echo ""
@@ -1113,6 +1216,7 @@ main() {
     # Configure selected adapters
     if has_adapter "claude-code" "$SELECTED_ADAPTERS"; then
         configure_claude_code
+        create_claude_md
     fi
     if has_adapter "opencode" "$SELECTED_ADAPTERS"; then
         configure_opencode
