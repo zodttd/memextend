@@ -74,6 +74,11 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
   const spinner = ora();
 
   try {
+    // Step 0: Stop webui if running
+    spinner.start('Stopping webui if running...');
+    await stopWebui();
+    spinner.succeed('Stopped webui');
+
     // Step 1: Remove from Claude Code settings
     spinner.start('Removing Claude Code integration...');
     await removeFromClaudeSettings();
@@ -239,4 +244,29 @@ async function cleanupShellConfigs(): Promise<string[]> {
   }
 
   return cleaned;
+}
+
+async function stopWebui(): Promise<void> {
+  const pidFile = join(MEMEXTEND_DIR, 'webui.pid');
+
+  if (!existsSync(pidFile)) {
+    return;
+  }
+
+  try {
+    const pid = parseInt(await readFile(pidFile, 'utf-8'), 10);
+    if (!isNaN(pid)) {
+      try {
+        process.kill(pid, 'SIGTERM');
+        // Give it a moment to stop
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch {
+        // Process might already be dead
+      }
+    }
+    // Remove the pid file
+    await rm(pidFile, { force: true });
+  } catch {
+    // Ignore errors
+  }
 }
