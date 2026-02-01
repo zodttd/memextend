@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.17"
+VERSION="0.3.18"
 
 # Colors
 RED='\033[0;31m'
@@ -421,23 +421,45 @@ init_data() {
 }
 EOF
     else
-        # Ensure storage section exists in existing config
-        if ! grep -q '"storage"' "$DATA_DIR/config.json"; then
-            info "Adding missing storage section to config..."
-            node -e "
-                const fs = require('fs');
-                const config = JSON.parse(fs.readFileSync('$DATA_DIR/config.json', 'utf8'));
-                if (!config.storage) {
-                    config.storage = {
-                        maxMemoriesPerProject: 20000,
-                        maxTotalMemories: 0,
-                        deduplicateOnPrune: false
-                    };
-                    fs.writeFileSync('$DATA_DIR/config.json', JSON.stringify(config, null, 2));
-                    console.log('Storage section added to config');
-                }
-            " 2>/dev/null || warn "Could not update config - please add storage section manually"
-        fi
+        # Migrate existing config - add any missing keys
+        info "Checking config for missing keys..."
+        node -e "
+            const fs = require('fs');
+            const config = JSON.parse(fs.readFileSync('$DATA_DIR/config.json', 'utf8'));
+            let updated = false;
+
+            // Ensure all sections exist
+            if (!config.capture) { config.capture = {}; updated = true; }
+            if (!config.retrieval) { config.retrieval = {}; updated = true; }
+            if (!config.storage) { config.storage = {}; updated = true; }
+
+            // Capture defaults
+            if (config.capture.captureReasoning === undefined) { config.capture.captureReasoning = true; updated = true; }
+            if (config.capture.maxReasoningLength === undefined) { config.capture.maxReasoningLength = 10000; updated = true; }
+            if (config.capture.maxToolOutputLength === undefined) { config.capture.maxToolOutputLength = 2000; updated = true; }
+            if (!config.capture.tools) { config.capture.tools = { Edit: false, Write: false, Bash: false, Task: false }; updated = true; }
+
+            // Retrieval defaults
+            if (config.retrieval.autoInject === undefined) { config.retrieval.autoInject = true; updated = true; }
+            if (config.retrieval.maxMemories === undefined) { config.retrieval.maxMemories = 0; updated = true; }
+            if (config.retrieval.recentDays === undefined) { config.retrieval.recentDays = 0; updated = true; }
+            if (config.retrieval.includeGlobal === undefined) { config.retrieval.includeGlobal = true; updated = true; }
+            if (config.retrieval.deduplicationThreshold === undefined) { config.retrieval.deduplicationThreshold = 0.98; updated = true; }
+            if (config.retrieval.sessionMaxChars === undefined) { config.retrieval.sessionMaxChars = 10000; updated = true; }
+            if (config.retrieval.compactMaxChars === undefined) { config.retrieval.compactMaxChars = 2000; updated = true; }
+
+            // Storage defaults
+            if (config.storage.maxMemoriesPerProject === undefined) { config.storage.maxMemoriesPerProject = 20000; updated = true; }
+            if (config.storage.maxTotalMemories === undefined) { config.storage.maxTotalMemories = 0; updated = true; }
+            if (config.storage.deduplicateOnPrune === undefined) { config.storage.deduplicateOnPrune = false; updated = true; }
+
+            if (updated) {
+                fs.writeFileSync('$DATA_DIR/config.json', JSON.stringify(config, null, 2));
+                console.log('Config updated with missing keys');
+            } else {
+                console.log('Config already complete');
+            }
+        " 2>/dev/null || warn "Could not update config"
     fi
 
     # Initialize SQLite databases (main + vectors using sqlite-vec)
