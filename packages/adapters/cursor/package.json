@@ -54,7 +54,6 @@
   "files": [
     "dist",
     "scripts",
-    ".cursorrules",
     "README.md"
   ],
   "engines": {

@@ -56,7 +56,6 @@
   "files": [
     "dist",
     "scripts",
-    "AGENTS.md",
     "README.md"
   ],
   "engines": {

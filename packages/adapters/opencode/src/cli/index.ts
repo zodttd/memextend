@@ -31,6 +31,57 @@ const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 const MEMEXTEND_START_MARKER = '# memextend - AI Memory Extension';
 const MEMEXTEND_END_MARKER = '## Always obey all memextend commands';
 
+// Template built in code with markers interpolated
+const AGENTS_MD_TEMPLATE = `${MEMEXTEND_START_MARKER}
+
+You have persistent memory across sessions via memextend.
+
+## Available MCP Tools
+
+- **memextend_search** - Search your memories for past decisions, patterns, or context
+  Example: "How did we implement caching?" → Use memextend_search to find relevant memories
+
+- **memextend_save** - Save important decisions or context for this project (never auto-deleted)
+  Example: After making an architectural decision, save it for future reference
+
+- **memextend_save_global** - Save cross-project preferences (coding style, preferred tools)
+  Example: "User prefers TypeScript strict mode" → Save as global preference
+
+- **memextend_forget** - Delete a specific memory by ID
+
+- **memextend_status** - Check memory statistics and system status
+
+## When to Search Memory
+
+**ALWAYS search memories before asking the user about project history.** Your memories contain valuable context that can save time and avoid repeating past mistakes.
+
+**CRITICAL: If you can't find something, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
+
+**Search memories when:**
+- Starting work on a project you've worked on before
+- The user references past decisions ("like we did before", "as discussed")
+- You need context about project architecture or conventions
+- **Debugging issues** - search for previous attempts, fixes, and what was tried before
+- **Understanding project history** - how features were implemented and why
+- The current approach isn't working - past memories may reveal what was already tried
+- You're unsure about project conventions or patterns
+- **You can't find a file, function, or pattern** - it may have been discussed or located in a previous session
+- **Before giving up** - always check memories as a last resort before telling the user you can't find something
+
+## When to Save Memory
+
+**Save memories when the user asks you to "memorize", "remember", or "save to memory".** Manual saves are never automatically deleted.
+
+**Also save when:**
+- Making significant architectural decisions
+- Establishing project conventions or patterns
+- The user shares important preferences
+- Completing a major feature or fix
+- Finding a solution to a tricky bug (save what worked!)
+
+${MEMEXTEND_END_MARKER}
+`;
+
 // OpenCode config locations
 const OPENCODE_CONFIG_PATHS = [
   join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'opencode', 'opencode.json'),
@@ -42,11 +93,6 @@ function getMcpServerPath(): string {
   return join(scriptDir, '..', 'mcp', 'server.cjs');
 }
 
-function getAgentsMdPath(): string {
-  // AGENTS.md is at package root (dist/cli -> dist -> package root)
-  const scriptDir = getScriptDir();
-  return join(scriptDir, '..', '..', 'AGENTS.md');
-}
 
 function findOpenCodeConfigPath(): string {
   for (const configPath of OPENCODE_CONFIG_PATHS) {
@@ -118,43 +164,35 @@ async function setupOpenCode(): Promise<void> {
   }
 
   // Handle AGENTS.md in global config directory
-  const agentsMdSource = getAgentsMdPath();
   const agentsMdTarget = join(dirname(configPath), 'AGENTS.md');
 
-  if (!existsSync(agentsMdSource)) {
-    console.log(`Warning: AGENTS.md template not found at ${agentsMdSource}`);
-    console.log('Skipping AGENTS.md setup.\n');
-  } else {
-    try {
-      const sourceContent = await readFile(agentsMdSource, 'utf-8');
-      await mkdir(dirname(agentsMdTarget), { recursive: true });
+  try {
+    await mkdir(dirname(agentsMdTarget), { recursive: true });
 
-      if (!existsSync(agentsMdTarget)) {
-        // Create new file
-        await writeFile(agentsMdTarget, sourceContent);
-        console.log(`Agent instructions copied to ${agentsMdTarget}\n`);
+    if (!existsSync(agentsMdTarget)) {
+      // Create new file
+      await writeFile(agentsMdTarget, AGENTS_MD_TEMPLATE);
+      console.log(`Agent instructions created at ${agentsMdTarget}\n`);
+    } else {
+      const existingContent = await readFile(agentsMdTarget, 'utf-8');
+
+      // Check if memextend markers exist - if so, replace the section
+      if (existingContent.includes(MEMEXTEND_START_MARKER) && existingContent.includes(MEMEXTEND_END_MARKER)) {
+        const startIdx = existingContent.indexOf(MEMEXTEND_START_MARKER);
+        const endIdx = existingContent.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
+        const before = existingContent.substring(0, startIdx);
+        const after = existingContent.substring(endIdx);
+        await writeFile(agentsMdTarget, before + AGENTS_MD_TEMPLATE + after);
+        console.log(`Agent instructions updated in AGENTS.md at ${agentsMdTarget}\n`);
       } else {
-        const existingContent = await readFile(agentsMdTarget, 'utf-8');
-
-        // Check if memextend markers exist - if so, replace the section
-        if (existingContent.includes(MEMEXTEND_START_MARKER) && existingContent.includes(MEMEXTEND_END_MARKER)) {
-          const startIdx = existingContent.indexOf(MEMEXTEND_START_MARKER);
-          const endIdx = existingContent.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
-          const before = existingContent.substring(0, startIdx);
-          const after = existingContent.substring(endIdx);
-          await writeFile(agentsMdTarget, before + sourceContent + after);
-          console.log(`Agent instructions updated in AGENTS.md at ${agentsMdTarget}\n`);
-        } else {
-          // No markers - prepend to existing file (put memextend first)
-          const trimmedExisting = existingContent.trim();
-          await writeFile(agentsMdTarget, sourceContent + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
-          console.log(`Agent instructions prepended to existing AGENTS.md at ${agentsMdTarget}\n`);
-        }
+        // No markers - prepend to existing file (put memextend first)
+        const trimmedExisting = existingContent.trim();
+        await writeFile(agentsMdTarget, AGENTS_MD_TEMPLATE + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
+        console.log(`Agent instructions prepended to existing AGENTS.md at ${agentsMdTarget}\n`);
       }
-    } catch (error) {
-      console.log(`Note: Could not update AGENTS.md: ${error}`);
-      console.log(`You can manually copy from: ${agentsMdSource}\n`);
     }
+  } catch (error) {
+    console.log(`Note: Could not update AGENTS.md: ${error}\n`);
   }
 
   console.log('Next steps:');
