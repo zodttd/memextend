@@ -192,6 +192,12 @@ async function main(): Promise<void> {
       }
     }
 
+    // Optimize LanceDB to prevent version bloat (safe here - no concurrent queries)
+    const optimizeResult = await lancedb.optimize();
+    if (optimizeResult && (optimizeResult.compacted > 0 || optimizeResult.pruned > 0)) {
+      log('Stop', `Optimized LanceDB: ${optimizeResult.compacted} files compacted, ${optimizeResult.pruned} versions pruned`);
+    }
+
     // Close storage and embedder
     sqlite.close();
     await lancedb.close();

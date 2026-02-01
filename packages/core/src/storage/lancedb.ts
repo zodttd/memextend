@@ -45,9 +45,8 @@ export class LanceDBStorage {
     } else {
       await this.table.add(data);
     }
-
-    // Auto-optimize after every insert to prevent version bloat
-    await this.optimize();
+    // Note: Don't optimize here - causes race conditions with concurrent queries
+    // Optimization happens in Stop hook when session ends
   }
 
   async insertVectors(items: Array<{ id: string; vector: number[] }>): Promise<void> {
@@ -62,9 +61,8 @@ export class LanceDBStorage {
     } else {
       await this.table.add(items);
     }
-
-    // Auto-optimize after every insert to prevent version bloat
-    await this.optimize();
+    // Note: Don't optimize here - causes race conditions with concurrent queries
+    // Optimization happens in Stop hook when session ends
   }
 
   async search(vector: number[], limit: number = 10): Promise<VectorSearchResult[]> {
