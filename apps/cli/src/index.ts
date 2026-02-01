@@ -53,10 +53,12 @@ program
 
 program
   .command('forget [memoryId]')
-  .description('Delete a memory by ID, or use --all/--before to bulk delete')
+  .description('Delete a memory by ID, or use options for bulk delete')
   .option('-a, --all', 'Delete ALL memories (use with caution)')
   .option('-p, --project', 'Only affect current project')
   .option('--before <date>', 'Delete memories before date (YYYY-MM-DD)')
+  .option('--delete-project <name>', 'Delete a project and all its memories')
+  .option('--clear-global', 'Clear all global profile entries')
   .action(forgetCommand);
 
 program

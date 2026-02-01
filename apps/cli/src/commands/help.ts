@@ -109,15 +109,18 @@ ${chalk.yellow.bold('COMMANDS')}
     Delete ALL memories (requires confirmation).
 
     ${chalk.dim('Options:')}
-      ${chalk.dim('-a, --all')}        Delete all memories
-      ${chalk.dim('-p, --project')}    Only delete from current project
-      ${chalk.dim('--before <date>')}  Delete memories before date (YYYY-MM-DD)
+      ${chalk.dim('-a, --all')}                   Delete all memories
+      ${chalk.dim('-p, --project')}               Only delete from current project
+      ${chalk.dim('--before <date>')}             Delete memories before date (YYYY-MM-DD)
+      ${chalk.dim('--delete-project <name>')}     Delete a project and all its memories
+      ${chalk.dim('--clear-global')}              Clear all global profile entries
 
     ${chalk.dim('Examples:')}
       ${chalk.dim('$ memextend forget --all                      # Delete everything')}
       ${chalk.dim('$ memextend forget --all --project            # Delete current project only')}
       ${chalk.dim('$ memextend forget --before 2025-01-01        # Delete old memories')}
-      ${chalk.dim('$ memextend forget --before 2025-06-01 -p     # Delete old project memories')}
+      ${chalk.dim('$ memextend forget --delete-project myproject # Delete entire project')}
+      ${chalk.dim('$ memextend forget --clear-global             # Clear global profile')}
 
   ${chalk.cyan('memextend init')}
     Initialize memextend (run by installer, rarely needed manually).
@@ -291,24 +294,27 @@ ${chalk.yellow('Examples:')}
     'forget': `
 ${chalk.cyan.bold('memextend forget')}
 
-Delete memories. Can delete single memories or bulk delete.
+Delete memories. Can delete single memories, bulk delete, or delete entire projects.
 
 ${chalk.yellow('Single delete:')}
   $ memextend forget <memory-id>
 
 ${chalk.yellow('Bulk delete options:')}
-  -a, --all        Delete all memories (with confirmation)
-  -p, --project    Only affect current project
-  --before <date>  Delete memories before date (YYYY-MM-DD)
+  -a, --all                   Delete all memories (with confirmation)
+  -p, --project               Only affect current project
+  --before <date>             Delete memories before date (YYYY-MM-DD)
+  --delete-project <name>     Delete a project and all its memories
+  --clear-global              Clear all global profile entries
 
 ${chalk.yellow('Examples:')}
-  $ memextend forget abc123           # Single memory
-  $ memextend forget --all            # Everything (careful!)
-  $ memextend forget --all --project  # Current project only
-  $ memextend forget --before 2025-01-01
-  $ memextend forget --before 2025-06-01 --project
+  $ memextend forget abc123                     # Single memory
+  $ memextend forget --all                      # Everything (careful!)
+  $ memextend forget --all --project            # Current project only
+  $ memextend forget --before 2025-01-01        # Old memories
+  $ memextend forget --delete-project myproject # Delete entire project
+  $ memextend forget --clear-global             # Clear global profile
 
-${chalk.red('Warning:')} Bulk deletes are permanent and cannot be undone.
+${chalk.red('Warning:')} All deletes are permanent and cannot be undone.
 `,
     'edit': `
 ${chalk.cyan.bold('memextend edit <memory-id>')}

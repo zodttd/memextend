@@ -184,6 +184,8 @@ memextend forget --all              # Delete ALL memories
 memextend forget --all --project    # Delete current project only
 memextend forget --before 2025-01-01           # Delete old memories
 memextend forget --before 2025-06-01 --project # Old project memories
+memextend forget --delete-project myproject    # Delete entire project
+memextend forget --clear-global                # Clear all global profile entries
 ```
 
 ### Import/Export
@@ -214,7 +216,9 @@ The web UI provides:
 - **Create** - Add new project or global memories via "+ New Memory" buttons
 - **Search** - Hybrid search with semantic and keyword matching
 - **Edit/Delete** - Modify or remove individual memories
+- **Delete Project** - Remove entire projects with all their memories
 - **Global Profiles** - View and manage cross-project preferences
+- **Clear Global Profile** - Remove all global profile entries at once
 - **Settings** - Configure capture and retrieval options:
   - Toggle reasoning capture and individual tool capture
   - Set max content lengths for captures

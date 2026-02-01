@@ -170,3 +170,42 @@ statsRouter.get('/global', async (req: Request, res: Response) => {
     res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
+
+// DELETE /api/stats/global/:id - Delete a specific global profile
+statsRouter.delete('/global/:id', async (req: Request, res: Response) => {
+  try {
+    const { SQLiteStorage } = await import('@memextend/core');
+    const sqlite = new SQLiteStorage(req.app.locals.dbPath);
+
+    const deleted = sqlite.deleteGlobalProfile(req.params.id);
+
+    sqlite.close();
+
+    if (!deleted) {
+      res.status(404).json({ error: 'Global profile not found' });
+      return;
+    }
+
+    res.json({ success: true, id: req.params.id });
+  } catch (error) {
+    console.error('Error deleting global profile:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// DELETE /api/stats/global - Delete all global profiles
+statsRouter.delete('/global', async (req: Request, res: Response) => {
+  try {
+    const { SQLiteStorage } = await import('@memextend/core');
+    const sqlite = new SQLiteStorage(req.app.locals.dbPath);
+
+    const deleted = sqlite.deleteAllGlobalProfiles();
+
+    sqlite.close();
+
+    res.json({ success: true, deleted });
+  } catch (error) {
+    console.error('Error deleting all global profiles:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});

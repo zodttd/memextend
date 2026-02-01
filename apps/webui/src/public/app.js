@@ -329,8 +329,11 @@ function populateProjectSelectors() {
 
 // Filters
 function setupFilters() {
+  const filterProject = document.getElementById('filter-project');
+  const deleteProjectBtn = document.getElementById('delete-project-btn');
+
   document.getElementById('apply-filters').addEventListener('click', () => {
-    state.filters.projectId = document.getElementById('filter-project').value;
+    state.filters.projectId = filterProject.value;
     state.filters.type = document.getElementById('filter-type').value;
     state.filters.tool = document.getElementById('filter-tool').value;
     state.filters.startDate = document.getElementById('filter-start-date').value;
@@ -340,14 +343,76 @@ function setupFilters() {
   });
 
   document.getElementById('clear-filters').addEventListener('click', () => {
-    document.getElementById('filter-project').value = '';
+    filterProject.value = '';
     document.getElementById('filter-type').value = '';
     document.getElementById('filter-tool').value = '';
     document.getElementById('filter-start-date').value = '';
     document.getElementById('filter-end-date').value = '';
     state.filters = { projectId: '', type: '', tool: '', startDate: '', endDate: '' };
     state.pagination.offset = 0;
+    deleteProjectBtn.style.display = 'none';
     loadMemories();
+  });
+
+  // Show/hide delete project button when project is selected
+  filterProject.addEventListener('change', () => {
+    deleteProjectBtn.style.display = filterProject.value ? 'inline-block' : 'none';
+  });
+
+  // Delete project button
+  deleteProjectBtn.addEventListener('click', () => {
+    const projectId = filterProject.value;
+    if (!projectId) return;
+
+    const project = state.projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    document.getElementById('delete-project-name').textContent = project.name;
+    document.getElementById('delete-project-count').textContent = project.memoryCount;
+    document.getElementById('delete-project-modal').classList.add('active');
+    state.selectedProjectToDelete = projectId;
+  });
+}
+
+// Setup delete project modal
+function setupDeleteProjectModal() {
+  const modal = document.getElementById('delete-project-modal');
+
+  document.getElementById('cancel-delete-project').addEventListener('click', closeModals);
+
+  document.getElementById('confirm-delete-project').addEventListener('click', async () => {
+    if (state.selectedProjectToDelete) {
+      await deleteProject(state.selectedProjectToDelete);
+      state.selectedProjectToDelete = null;
+      document.getElementById('filter-project').value = '';
+      document.getElementById('delete-project-btn').style.display = 'none';
+      state.filters.projectId = '';
+    }
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModals();
+  });
+}
+
+// Setup clear global profile modal
+function setupClearGlobalModal() {
+  const modal = document.getElementById('clear-global-modal');
+  const clearBtn = document.getElementById('clear-global-btn');
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('clear-global-count').textContent = state.globalProfiles.length;
+      modal.classList.add('active');
+    });
+  }
+
+  document.getElementById('cancel-clear-global').addEventListener('click', closeModals);
+
+  document.getElementById('confirm-clear-global').addEventListener('click', clearAllGlobalProfiles);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModals();
   });
 }
 
@@ -447,6 +512,12 @@ async function loadGlobalProfiles() {
 
 function renderGlobalProfiles() {
   const container = document.getElementById('global-profiles');
+  const clearBtn = document.getElementById('clear-global-btn');
+
+  // Show/hide clear button based on whether there are profiles
+  if (clearBtn) {
+    clearBtn.style.display = state.globalProfiles.length > 0 ? 'inline-block' : 'none';
+  }
 
   if (state.globalProfiles.length === 0) {
     container.innerHTML = `
@@ -459,15 +530,66 @@ function renderGlobalProfiles() {
   }
 
   container.innerHTML = state.globalProfiles.map(p => `
-    <div class="global-item">
+    <div class="global-item" data-global-id="${p.id}">
       <div class="global-item-header">
         <span class="global-key-badge">${p.key}</span>
         <span class="memory-date">${formatDate(p.createdAt)}</span>
+        <button class="btn btn-danger btn-tiny delete-global-item" data-id="${p.id}" title="Delete this entry">×</button>
       </div>
       <div class="global-content">${escapeHtml(p.content)}</div>
       <div class="memory-id">ID: ${p.id}</div>
     </div>
   `).join('');
+
+  // Add click handlers for individual delete buttons
+  container.querySelectorAll('.delete-global-item').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (confirm('Delete this global profile entry?')) {
+        await deleteGlobalProfile(id);
+      }
+    });
+  });
+}
+
+// Delete a single global profile
+async function deleteGlobalProfile(id) {
+  try {
+    await api(`/stats/global/${id}`, { method: 'DELETE' });
+    showToast('Global profile entry deleted', 'success');
+    loadGlobalProfiles();
+  } catch (error) {
+    showToast('Failed to delete global profile entry', 'error');
+  }
+}
+
+// Clear all global profiles
+async function clearAllGlobalProfiles() {
+  try {
+    const result = await api('/stats/global', { method: 'DELETE' });
+    showToast(`Cleared ${result.deleted} global profile entries`, 'success');
+    closeModals();
+    loadGlobalProfiles();
+  } catch (error) {
+    showToast('Failed to clear global profiles', 'error');
+  }
+}
+
+// Delete a project and all its memories
+async function deleteProject(projectId) {
+  try {
+    const result = await api(`/projects/${projectId}`, { method: 'DELETE' });
+    showToast(`Deleted project with ${result.memoriesDeleted} memories`, 'success');
+    closeModals();
+    loadProjects();
+    loadMemories();
+    if (state.currentView === 'dashboard') {
+      loadDashboard();
+    }
+  } catch (error) {
+    showToast('Failed to delete project', 'error');
+  }
 }
 
 // Memory Modal
@@ -553,6 +675,8 @@ function closeModals() {
   document.getElementById('memory-modal').classList.remove('active');
   document.getElementById('delete-modal').classList.remove('active');
   document.getElementById('create-modal').classList.remove('active');
+  document.getElementById('delete-project-modal').classList.remove('active');
+  document.getElementById('clear-global-modal').classList.remove('active');
   state.selectedMemory = null;
 }
 
@@ -821,6 +945,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSearch();
   setupModal();
   setupSettings();
+  setupDeleteProjectModal();
+  setupClearGlobalModal();
 
   // Load initial view
   loadDashboard();

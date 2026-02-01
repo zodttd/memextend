@@ -251,6 +251,36 @@ export class SQLiteStorage {
     };
   }
 
+  /**
+   * Delete a project and all its memories.
+   * @returns Object with counts of deleted project and memories
+   */
+  deleteProject(projectId: string): { projectDeleted: boolean; memoriesDeleted: number } {
+    // Delete all memories for this project first
+    const memoriesResult = this.db.prepare('DELETE FROM memories WHERE project_id = ?').run(projectId);
+
+    // Delete the project
+    const projectResult = this.db.prepare('DELETE FROM projects WHERE id = ?').run(projectId);
+
+    return {
+      projectDeleted: projectResult.changes > 0,
+      memoriesDeleted: memoriesResult.changes
+    };
+  }
+
+  /**
+   * Get all projects.
+   */
+  getAllProjects(): Project[] {
+    const rows = this.db.prepare('SELECT * FROM projects ORDER BY name ASC').all() as any[];
+    return rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      path: row.path,
+      createdAt: row.created_at
+    }));
+  }
+
   // Global profile methods
   insertGlobalProfile(profile: GlobalProfile): void {
     const stmt = this.db.prepare(`
@@ -270,6 +300,23 @@ export class SQLiteStorage {
       content: row.content,
       createdAt: row.created_at
     }));
+  }
+
+  /**
+   * Delete a specific global profile by ID.
+   */
+  deleteGlobalProfile(id: string): boolean {
+    const result = this.db.prepare('DELETE FROM global_profile WHERE id = ?').run(id);
+    return result.changes > 0;
+  }
+
+  /**
+   * Delete all global profiles.
+   * @returns Number of profiles deleted
+   */
+  deleteAllGlobalProfiles(): number {
+    const result = this.db.prepare('DELETE FROM global_profile').run();
+    return result.changes;
   }
 
   getMemoryCount(): number {

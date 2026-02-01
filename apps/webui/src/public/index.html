@@ -87,9 +87,12 @@
             <button id="create-memory-btn" class="btn btn-primary">+ New Memory</button>
           </div>
           <div class="filters">
-            <select id="filter-project" class="filter-select">
-              <option value="">All Projects</option>
-            </select>
+            <div class="filter-group">
+              <select id="filter-project" class="filter-select">
+                <option value="">All Projects</option>
+              </select>
+              <button id="delete-project-btn" class="btn btn-danger btn-small" style="display: none;" title="Delete selected project">Delete Project</button>
+            </div>
             <select id="filter-type" class="filter-select">
               <option value="">All Types</option>
               <option value="reasoning">Reasoning</option>
@@ -147,7 +150,10 @@
             <h2>Global Profile</h2>
             <p class="section-desc">Cross-project preferences and patterns that apply to all sessions.</p>
           </div>
-          <button id="create-global-btn" class="btn btn-primary">+ New Global Memory</button>
+          <div class="header-actions">
+            <button id="create-global-btn" class="btn btn-primary">+ New Global Memory</button>
+            <button id="clear-global-btn" class="btn btn-danger">Clear All</button>
+          </div>
         </div>
         <div id="global-profiles" class="memory-list"></div>
       </section>
@@ -496,6 +502,42 @@
         <div class="modal-footer">
           <button id="confirm-delete" class="btn btn-danger">Delete</button>
           <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Project Confirmation Modal -->
+    <div id="delete-project-modal" class="modal">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Delete Project</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete project "<strong id="delete-project-name"></strong>"?</p>
+          <p class="warning-text">This will permanently delete <strong id="delete-project-count"></strong> memories and cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirm-delete-project" class="btn btn-danger">Delete Project</button>
+          <button id="cancel-delete-project" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear Global Profile Confirmation Modal -->
+    <div id="clear-global-modal" class="modal">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Clear Global Profile</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to clear all global profile entries?</p>
+          <p class="warning-text">This will permanently delete <strong id="clear-global-count"></strong> entries and cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirm-clear-global" class="btn btn-danger">Clear All</button>
+          <button id="cancel-clear-global" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
     </div>

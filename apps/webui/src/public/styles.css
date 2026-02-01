@@ -589,6 +589,39 @@ body::before {
   font-size: 0.9375rem;
 }
 
+.btn-small {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn-tiny {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  min-width: unset;
+  line-height: 1;
+}
+
+/* Filter group */
+.filter-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Header actions */
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Warning text */
+.warning-text {
+  color: var(--accent-red);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
 /* Search */
 .search-container {
   margin-bottom: 2rem;

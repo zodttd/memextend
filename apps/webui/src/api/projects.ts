@@ -111,3 +111,48 @@ projectsRouter.get('/:id/memories', async (req: Request, res: Response) => {
     res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
+
+// DELETE /api/projects/:id - Delete a project and all its memories
+projectsRouter.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const { SQLiteStorage, LanceDBStorage } = await import('@memextend/core');
+    const sqlite = new SQLiteStorage(req.app.locals.dbPath);
+    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+
+    // Get all memory IDs for this project before deleting (for vector cleanup)
+    const memories = sqlite.getAllMemories(req.params.id, 100000);
+    const memoryIds = memories.map(m => m.id);
+
+    // Delete the project and its memories from SQLite
+    const result = sqlite.deleteProject(req.params.id);
+
+    // Delete vectors for all those memories
+    let vectorsDeleted = 0;
+    for (const memoryId of memoryIds) {
+      try {
+        await lancedb.deleteVector(memoryId);
+        vectorsDeleted++;
+      } catch {
+        // Ignore vector deletion errors
+      }
+    }
+
+    sqlite.close();
+    await lancedb.close();
+
+    if (!result.projectDeleted && result.memoriesDeleted === 0) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      projectDeleted: result.projectDeleted,
+      memoriesDeleted: result.memoriesDeleted,
+      vectorsDeleted
+    });
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
