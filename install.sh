@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.10"
+VERSION="0.3.11"
 
 # Colors
 RED='\033[0;31m'
@@ -307,9 +307,6 @@ select_adapters() {
 
 # Stop webui if running
 stop_webui() {
-    local stopped=false
-
-    # Try PID file first
     if [ -f "$DATA_DIR/webui.pid" ]; then
         PID=$(cat "$DATA_DIR/webui.pid" 2>/dev/null)
         if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
@@ -320,16 +317,9 @@ stop_webui() {
             if kill -0 "$PID" 2>/dev/null; then
                 kill -9 "$PID" 2>/dev/null
             fi
-            stopped=true
+            success "Webui stopped"
         fi
         rm -f "$DATA_DIR/webui.pid"
-    fi
-
-    # Also kill any webui process by name (fallback)
-    pkill -f "memextend.*webui" 2>/dev/null && stopped=true
-
-    if [ "$stopped" = true ]; then
-        success "Webui stopped"
     fi
 }
 
