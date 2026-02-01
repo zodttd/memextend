@@ -94,12 +94,13 @@ export class SQLiteVecStorage {
 
     // KNN search using sqlite-vec
     // distance is L2 (Euclidean) by default, lower = more similar
+    // Using AND k = ? instead of LIMIT for better compatibility with vec0 virtual tables
     const stmt = this.db.prepare(`
       SELECT id, distance
       FROM ${this.tableName}
       WHERE vector MATCH ?
+        AND k = ?
       ORDER BY distance
-      LIMIT ?
     `);
 
     const rows = stmt.all(vectorBuffer, effectiveLimit) as Array<{ id: string; distance: number }>;
