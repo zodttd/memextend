@@ -38,9 +38,30 @@ async function buildMCP() {
   }
 }
 
+async function buildCLI() {
+  const cliDir = join(distDir, 'cli');
+  await mkdir(cliDir, { recursive: true });
+
+  try {
+    await build({
+      ...commonOptions,
+      entryPoints: [join(srcDir, 'cli', 'index.ts')],
+      outfile: join(cliDir, 'index.cjs'),
+      banner: {
+        js: '#!/usr/bin/env node',
+      },
+    });
+    console.log(`Built cli/index.cjs`);
+  } catch (e) {
+    console.log(`Failed to build CLI: ${e.message}`);
+    process.exit(1);
+  }
+}
+
 async function main() {
   console.log('Building memextend OpenCode adapter...\n');
   await buildMCP();
+  await buildCLI();
   console.log('\nBuild complete!');
 }
 

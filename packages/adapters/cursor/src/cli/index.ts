@@ -16,7 +16,7 @@
  *   status     - Check memextend status
  */
 
-import { existsSync } from 'fs';
+import { existsSync, copyFileSync } from 'fs';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join, dirname, resolve } from 'path';
 import { homedir } from 'os';
@@ -46,6 +46,12 @@ function getMcpServerPath(): string {
   // Get the path to the built MCP server
   const scriptDir = getScriptDir();
   return join(scriptDir, '..', 'mcp', 'server.cjs');
+}
+
+function getCursorrrulesPath(): string {
+  // Get the path to the .cursorrules template
+  const scriptDir = getScriptDir();
+  return join(scriptDir, '..', '..', '.cursorrules');
 }
 
 function findCursorConfigPath(): string | null {
@@ -121,6 +127,36 @@ async function setupCursor(): Promise<void> {
   console.log('Success! memextend MCP server added to Cursor.\n');
   console.log(`Configuration file: ${configPath}`);
   console.log(`MCP server path: ${resolve(mcpServerPath)}\n`);
+
+  // Handle .cursorrules in current working directory
+  const cursorrrulesSource = getCursorrrulesPath();
+  const cursorrulesTarget = join(process.cwd(), '.cursorrules');
+
+  if (existsSync(cursorrrulesSource)) {
+    try {
+      const sourceContent = await readFile(cursorrrulesSource, 'utf-8');
+
+      if (!existsSync(cursorrulesTarget)) {
+        // Create new file
+        await writeFile(cursorrulesTarget, sourceContent);
+        console.log('Agent instructions copied to .cursorrules in current directory.\n');
+      } else {
+        // Check if memextend section already exists
+        const existingContent = await readFile(cursorrulesTarget, 'utf-8');
+        if (existingContent.includes('memextend')) {
+          console.log('Note: .cursorrules already contains memextend instructions.\n');
+        } else {
+          // Append to existing file
+          await writeFile(cursorrulesTarget, existingContent + '\n\n' + sourceContent);
+          console.log('Agent instructions appended to existing .cursorrules.\n');
+        }
+      }
+    } catch (error) {
+      console.log('Note: Could not update .cursorrules in current directory.');
+      console.log(`You can manually copy from: ${cursorrrulesSource}\n`);
+    }
+  }
+
   console.log('Next steps:');
   console.log('1. Restart Cursor to load the new MCP server');
   console.log('2. In Cursor, ask Claude to use memextend tools');
