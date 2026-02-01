@@ -332,17 +332,40 @@ export class SQLiteStorage {
   }
 
   /**
-   * Get IDs of oldest memories for a project, exceeding the limit
+   * Get count of auto-captured memories (excludes manual saves) for pruning calculations.
+   * Manual memories are never counted toward limits or deleted by pruning.
+   */
+  getAutoMemoryCount(): number {
+    const row = this.db.prepare(
+      'SELECT COUNT(*) as count FROM memories WHERE type != \'manual\''
+    ).get() as any;
+    return row.count;
+  }
+
+  /**
+   * Get count of auto-captured memories for a project (excludes manual saves).
+   * Manual memories are never counted toward limits or deleted by pruning.
+   */
+  getAutoMemoryCountByProject(projectId: string): number {
+    const row = this.db.prepare(
+      'SELECT COUNT(*) as count FROM memories WHERE project_id = ? AND type != \'manual\''
+    ).get(projectId) as any;
+    return row.count;
+  }
+
+  /**
+   * Get IDs of oldest auto-captured memories for a project, exceeding the limit.
+   * Manual memories are excluded - they are never pruned.
    * @returns Array of memory IDs to delete (oldest first)
    */
-  getOldestMemoryIds(projectId: string | null, limit: number): string[] {
+  getOldestAutoMemoryIds(projectId: string | null, limit: number): string[] {
     let query: string;
     let params: any[];
 
     if (projectId) {
       query = `
         SELECT id FROM memories
-        WHERE project_id = ?
+        WHERE project_id = ? AND type != 'manual'
         ORDER BY created_at ASC
         LIMIT ?
       `;
@@ -350,6 +373,7 @@ export class SQLiteStorage {
     } else {
       query = `
         SELECT id FROM memories
+        WHERE type != 'manual'
         ORDER BY created_at ASC
         LIMIT ?
       `;
@@ -361,7 +385,15 @@ export class SQLiteStorage {
   }
 
   /**
-   * Prune memories to stay within limits
+   * @deprecated Use getOldestAutoMemoryIds instead - manual memories should not be pruned
+   */
+  getOldestMemoryIds(projectId: string | null, limit: number): string[] {
+    return this.getOldestAutoMemoryIds(projectId, limit);
+  }
+
+  /**
+   * Prune auto-captured memories to stay within limits.
+   * Manual memories are NEVER deleted by pruning - they are excluded from counts and deletion.
    * @returns Number of memories deleted
    */
   pruneMemories(options: {
@@ -371,12 +403,12 @@ export class SQLiteStorage {
   }): { deleted: number; deletedIds: string[] } {
     const deletedIds: string[] = [];
 
-    // Prune per-project if limit specified
+    // Prune per-project if limit specified (only auto-captured memories)
     if (options.maxPerProject && options.maxPerProject > 0 && options.projectId) {
-      const count = this.getMemoryCountByProject(options.projectId);
+      const count = this.getAutoMemoryCountByProject(options.projectId);
       if (count > options.maxPerProject) {
         const excess = count - options.maxPerProject;
-        const idsToDelete = this.getOldestMemoryIds(options.projectId, excess);
+        const idsToDelete = this.getOldestAutoMemoryIds(options.projectId, excess);
         for (const id of idsToDelete) {
           this.deleteMemory(id);
           deletedIds.push(id);
@@ -384,12 +416,12 @@ export class SQLiteStorage {
       }
     }
 
-    // Prune total if limit specified
+    // Prune total if limit specified (only auto-captured memories)
     if (options.maxTotal && options.maxTotal > 0) {
-      const count = this.getMemoryCount();
+      const count = this.getAutoMemoryCount();
       if (count > options.maxTotal) {
         const excess = count - options.maxTotal;
-        const idsToDelete = this.getOldestMemoryIds(null, excess);
+        const idsToDelete = this.getOldestAutoMemoryIds(null, excess);
         for (const id of idsToDelete) {
           if (!deletedIds.includes(id)) {
             this.deleteMemory(id);

@@ -333,8 +333,8 @@ Config file: `~/.memextend/config.json`
     "compactMaxChars": 2000
   },
   "storage": {
-    "maxMemoriesPerProject": 500,
-    "maxTotalMemories": 5000
+    "maxMemoriesPerProject": 10000,
+    "maxTotalMemories": 0
   },
   "debug": false
 }
@@ -368,8 +368,8 @@ Config file: `~/.memextend/config.json`
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `maxMemoriesPerProject` | `500` | Max memories per project (0 = unlimited). Oldest are pruned first. |
-| `maxTotalMemories` | `5000` | Max total memories across all projects (0 = unlimited) |
+| `maxMemoriesPerProject` | `10000` | Max auto-captured memories per project (0 = unlimited). Oldest are pruned first. Manual saves are never pruned. |
+| `maxTotalMemories` | `0` | Max total auto-captured memories across all projects (0 = unlimited). Manual saves are never pruned. |
 | `deduplicateOnPrune` | `true` | Remove highly similar memories during pruning (uses deduplicationThreshold) |
 
 All settings can be configured via the WebUI Settings page (`memextend webui`).

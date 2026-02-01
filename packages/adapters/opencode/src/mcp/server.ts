@@ -48,7 +48,7 @@ async function getStorage(): Promise<{
 const server = new Server(
   {
     name: 'memextend',
-    version: '0.1.0',
+    version: '0.1.1',
   },
   {
     capabilities: {
@@ -81,7 +81,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'memextend_save',
-        description: 'Save a memory for this project. Use this to remember important decisions, patterns, or context.',
+        description: 'Save a memory for this project. Use this when the user asks you to "memorize", "remember", "memextend save", or save something to memory. Use this to remember important decisions, patterns, or context. Manual saves are never automatically deleted.',
         inputSchema: {
           type: 'object',
           properties: {

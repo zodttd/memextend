@@ -249,8 +249,9 @@ async function main(): Promise<void> {
     }
 
     // Prune old memories if storage limits are configured
-    const maxPerProject = config.storage?.maxMemoriesPerProject ?? 500;
-    const maxTotal = config.storage?.maxTotalMemories ?? 5000;
+    // Note: Manual memories are never pruned - only auto-captured ones count toward limits
+    const maxPerProject = config.storage?.maxMemoriesPerProject ?? 10000;
+    const maxTotal = config.storage?.maxTotalMemories ?? 0; // 0 = unlimited
 
     if (maxPerProject > 0 || maxTotal > 0) {
       const pruneResult = sqlite.pruneMemories({

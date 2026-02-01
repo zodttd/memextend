@@ -1,6 +1,6 @@
 {
   "name": "@memextend/claude-code",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Claude Code adapter for memextend - hooks and MCP server for persistent AI memory",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
