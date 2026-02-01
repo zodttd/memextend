@@ -187,32 +187,61 @@ get_remote_version() {
     curl -sfL "$url" 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).version)}catch{console.log('?')}})" 2>/dev/null || echo "?"
 }
 
+# Format version display (shows upgrade arrow if versions differ)
+format_version() {
+    local installed="$1"
+    local latest="$2"
+    if [ "$installed" = "?" ] || [ -z "$installed" ]; then
+        echo "v${latest}"
+    elif [ "$installed" = "$latest" ]; then
+        echo "v${installed}"
+    else
+        echo "v${installed} → v${latest}"
+    fi
+}
+
 # Select adapters (multi-select)
 select_adapters() {
     echo ""
     echo -e "${BOLD}Available adapters:${NC}"
     echo ""
 
-    # Check for installed versions if repo exists, otherwise fetch from GitHub
+    # Always fetch latest versions from GitHub
+    info "Checking latest versions..."
+    CORE_LATEST=$(get_remote_version "core")
+    CC_LATEST=$(get_remote_version "adapters/claude-code")
+    OC_LATEST=$(get_remote_version "adapters/opencode")
+    CU_LATEST=$(get_remote_version "adapters/cursor")
+
+    # Check for installed versions if repo exists
     if [ -d "$INSTALL_DIR/repo" ]; then
-        CORE_VER=$(get_package_version "$INSTALL_DIR/repo/packages/core/package.json")
-        CC_VER=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/claude-code/package.json")
-        OC_VER=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/opencode/package.json")
-        CU_VER=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/cursor/package.json")
-        echo -e "  ${DIM}Installed: @memextend/core v${CORE_VER}${NC}"
+        CORE_INSTALLED=$(get_package_version "$INSTALL_DIR/repo/packages/core/package.json")
+        CC_INSTALLED=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/claude-code/package.json")
+        OC_INSTALLED=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/opencode/package.json")
+        CU_INSTALLED=$(get_package_version "$INSTALL_DIR/repo/packages/adapters/cursor/package.json")
+
+        CORE_DISPLAY=$(format_version "$CORE_INSTALLED" "$CORE_LATEST")
+        CC_DISPLAY=$(format_version "$CC_INSTALLED" "$CC_LATEST")
+        OC_DISPLAY=$(format_version "$OC_INSTALLED" "$OC_LATEST")
+        CU_DISPLAY=$(format_version "$CU_INSTALLED" "$CU_LATEST")
+
+        if [ "$CORE_INSTALLED" != "$CORE_LATEST" ]; then
+            echo -e "  ${YELLOW}Upgrade available:${NC} @memextend/core ${CORE_DISPLAY}"
+        else
+            echo -e "  ${DIM}Installed: @memextend/core v${CORE_INSTALLED}${NC}"
+        fi
     else
-        # Fetch versions from GitHub for fresh install
-        info "Fetching available versions..."
-        CORE_VER=$(get_remote_version "core")
-        CC_VER=$(get_remote_version "adapters/claude-code")
-        OC_VER=$(get_remote_version "adapters/opencode")
-        CU_VER=$(get_remote_version "adapters/cursor")
-        echo -e "  ${DIM}Latest: @memextend/core v${CORE_VER}${NC}"
+        # Fresh install - just show latest versions
+        CORE_DISPLAY="v${CORE_LATEST}"
+        CC_DISPLAY="v${CC_LATEST}"
+        OC_DISPLAY="v${OC_LATEST}"
+        CU_DISPLAY="v${CU_LATEST}"
+        echo -e "  ${DIM}Latest: @memextend/core v${CORE_LATEST}${NC}"
     fi
     echo ""
-    echo -e "  1) Claude Code  v${CC_VER} - Anthropic's Claude Code CLI ${GREEN}(recommended)${NC}"
-    echo -e "  2) OpenCode     v${OC_VER} - anomalyco/opencode AI coding agent ${YELLOW}(experimental)${NC}"
-    echo -e "  3) Cursor       v${CU_VER} - Cursor IDE ${YELLOW}(experimental)${NC}"
+    echo -e "  1) Claude Code  ${CC_DISPLAY} - Anthropic's Claude Code CLI ${GREEN}(recommended)${NC}"
+    echo -e "  2) OpenCode     ${OC_DISPLAY} - anomalyco/opencode AI coding agent ${YELLOW}(experimental)${NC}"
+    echo -e "  3) Cursor       ${CU_DISPLAY} - Cursor IDE ${YELLOW}(experimental)${NC}"
     echo -e "  4) None         - Install core only, configure manually later"
     echo ""
 
