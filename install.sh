@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.1.2"
+VERSION="0.1.5"
 
 # Colors
 RED='\033[0;31m'

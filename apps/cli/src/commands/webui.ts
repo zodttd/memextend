@@ -1,10 +1,11 @@
 // apps/cli/src/commands/webui.ts
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
-import { existsSync } from 'fs';
+import { existsSync, writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
+import { spawn } from 'child_process';
 import chalk from 'chalk';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,13 +13,88 @@ const __dirname = dirname(__filename);
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
+const PID_FILE = join(MEMEXTEND_DIR, 'webui.pid');
 
 interface WebuiOptions {
   port?: string;
   host?: string;
+  foreground?: boolean;
 }
 
-export async function webuiCommand(options: WebuiOptions): Promise<void> {
+export async function webuiCommand(action: string | undefined, options: WebuiOptions): Promise<void> {
+  // Handle stop command
+  if (action === 'stop') {
+    await stopWebui();
+    return;
+  }
+
+  // Handle status command
+  if (action === 'status') {
+    await statusWebui();
+    return;
+  }
+
+  // If action is provided but not recognized, treat it as an error
+  if (action && action !== 'start') {
+    console.log(chalk.red(`\n  Unknown action: ${action}`));
+    console.log(chalk.dim('  Usage: memextend webui [start|stop|status]\n'));
+    return;
+  }
+
+  // Start the webui
+  await startWebui(options);
+}
+
+async function stopWebui(): Promise<void> {
+  if (!existsSync(PID_FILE)) {
+    console.log(chalk.yellow('\n  Web UI is not running (no PID file found).\n'));
+    return;
+  }
+
+  try {
+    const pid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
+
+    // Check if process is running
+    try {
+      process.kill(pid, 0); // Signal 0 just checks if process exists
+    } catch {
+      console.log(chalk.yellow('\n  Web UI process not found (stale PID file). Cleaning up.\n'));
+      unlinkSync(PID_FILE);
+      return;
+    }
+
+    // Kill the process
+    process.kill(pid, 'SIGTERM');
+    unlinkSync(PID_FILE);
+    console.log(chalk.green(`\n  Web UI stopped (PID ${pid}).\n`));
+  } catch (error) {
+    console.log(chalk.red(`\n  Failed to stop Web UI: ${error instanceof Error ? error.message : error}\n`));
+  }
+}
+
+async function statusWebui(): Promise<void> {
+  if (!existsSync(PID_FILE)) {
+    console.log(chalk.dim('\n  Web UI is not running.\n'));
+    return;
+  }
+
+  try {
+    const pid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
+
+    // Check if process is running
+    try {
+      process.kill(pid, 0);
+      console.log(chalk.green(`\n  Web UI is running (PID ${pid}).\n`));
+    } catch {
+      console.log(chalk.yellow('\n  Web UI is not running (stale PID file).\n'));
+      unlinkSync(PID_FILE);
+    }
+  } catch (error) {
+    console.log(chalk.red(`\n  Error checking status: ${error instanceof Error ? error.message : error}\n`));
+  }
+}
+
+async function startWebui(options: WebuiOptions): Promise<void> {
   // Check if memextend is initialized
   if (!existsSync(DB_PATH)) {
     console.log(chalk.yellow('\n  Warning: memextend not initialized. Run `memextend init` first.\n'));
@@ -33,6 +109,56 @@ export async function webuiCommand(options: WebuiOptions): Promise<void> {
     return;
   }
 
+  // Check if already running
+  if (existsSync(PID_FILE)) {
+    try {
+      const existingPid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
+      process.kill(existingPid, 0);
+      console.log(chalk.yellow(`\n  Web UI is already running (PID ${existingPid}).`));
+      console.log(chalk.dim(`  Use 'memextend webui stop' to stop it first.\n`));
+      return;
+    } catch {
+      // Process not running, clean up stale PID file
+      unlinkSync(PID_FILE);
+    }
+  }
+
+  // Run in foreground mode (blocking)
+  if (options.foreground) {
+    await runForeground(port, host);
+    return;
+  }
+
+  // Run in background mode (default)
+  await runBackground(port, host);
+}
+
+async function runBackground(port: number, host: string): Promise<void> {
+  // Get path to this script for spawning
+  const cliPath = join(__dirname, '..', 'index.js');
+
+  // Spawn a detached process running webui in foreground mode
+  const child = spawn('node', [cliPath, 'webui', '--foreground', '--port', String(port), '--host', host], {
+    detached: true,
+    stdio: 'ignore',
+    env: { ...process.env }
+  });
+
+  // Save PID
+  if (child.pid) {
+    writeFileSync(PID_FILE, String(child.pid));
+    child.unref();
+
+    console.log(chalk.bold('\n  memextend Web UI\n'));
+    console.log(`  Started in background at ${chalk.blue(`http://${host}:${port}`)}`);
+    console.log(chalk.dim(`  PID: ${child.pid}`));
+    console.log(chalk.dim(`  Stop with: memextend webui stop\n`));
+  } else {
+    console.log(chalk.red('\n  Failed to start Web UI in background.\n'));
+  }
+}
+
+async function runForeground(port: number, host: string): Promise<void> {
   try {
     // Dynamic import of the webui server
     // Path from apps/cli/dist/commands/webui.js to apps/webui/dist/server.js

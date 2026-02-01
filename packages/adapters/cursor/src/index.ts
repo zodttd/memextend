@@ -16,7 +16,7 @@
  */
 
 export const ADAPTER_NAME = 'cursor';
-export const ADAPTER_VERSION = '0.1.2';
+export const ADAPTER_VERSION = '0.1.5';
 export const ADAPTER_STATUS = 'beta';
 
 export * from './mcp/index.js';

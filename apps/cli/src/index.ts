@@ -20,7 +20,7 @@ const program = new Command();
 program
   .name('memextend')
   .description('Extend your AI coding assistant\'s memory. Free, local, private.')
-  .version('0.1.2');
+  .version('0.1.5');
 
 program
   .command('init')
@@ -91,10 +91,11 @@ program
   .action(importCommand);
 
 program
-  .command('webui')
-  .description('Start the web UI for browsing and editing memories')
+  .command('webui [action]')
+  .description('Start/stop the web UI (actions: start, stop, status)')
   .option('-p, --port <number>', 'Port number (default: 3333)', '3333')
   .option('-H, --host <host>', 'Host to bind to (default: localhost)', 'localhost')
+  .option('-f, --foreground', 'Run in foreground (default: background)')
   .action(webuiCommand);
 
 program

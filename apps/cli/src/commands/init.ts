@@ -104,7 +104,7 @@ interface InitOptions {
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
-  console.log(chalk.bold('\n  memextend v0.1.2\n'));
+  console.log(chalk.bold('\n  memextend v0.1.5\n'));
 
   if (options.manual) {
     printManualInstructions();

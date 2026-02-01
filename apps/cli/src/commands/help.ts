@@ -364,13 +364,20 @@ ${chalk.yellow('Examples:')}
   $ memextend import ./backup.json --validate-only
 `,
     'webui': `
-${chalk.cyan.bold('memextend webui')}
+${chalk.cyan.bold('memextend webui [action]')}
 
-Start a local web server for browsing and managing memories.
+Start/stop a local web server for browsing and managing memories.
+Runs in the background by default.
+
+${chalk.yellow('Actions:')}
+  start                Start the web UI (default)
+  stop                 Stop the running web UI
+  status               Check if web UI is running
 
 ${chalk.yellow('Options:')}
   -p, --port <number>  Port number (default: 3333)
   -H, --host <host>    Host to bind to (default: localhost)
+  -f, --foreground     Run in foreground (blocking)
 
 ${chalk.yellow('Features:')}
   • ${chalk.green('Dashboard')} - Memory statistics, activity chart, breakdowns
@@ -391,9 +398,12 @@ ${chalk.yellow('Retrieval Settings (in WebUI):')}
   • ${chalk.dim('Compact Max Chars')} - Max characters after compaction (2000 ≈ 500 tokens)
 
 ${chalk.yellow('Examples:')}
-  $ memextend webui                            # Start on localhost:3333
+  $ memextend webui                            # Start in background on localhost:3333
   $ memextend webui --port 8080                # Custom port
   $ memextend webui --host 0.0.0.0             # Bind to all interfaces
+  $ memextend webui stop                       # Stop the web UI
+  $ memextend webui status                     # Check if running
+  $ memextend webui --foreground               # Run in foreground (Ctrl+C to stop)
 
 ${chalk.yellow('Access:')}
   Open http://localhost:3333 in your browser after starting.

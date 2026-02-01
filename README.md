@@ -2,7 +2,13 @@
 
 > Extend your AI coding assistant's memory. Free, local, private.
 
-memextend gives Claude Code (and other AI coding tools) persistent memory across sessions. It captures your significant actions, stores them locally, and automatically provides relevant context when you start new sessions.
+memextend lets Claude Code, Cursor, and OpenCode continually remember your project's context between sessions and compacting.
+
+It remembers significant moments automatically, stores everything locally, and lets your agent quickly search for context when it needs it. This is all done without any external connections.
+
+Activate the local webui to visually add, edit, and search your project's memories. Add global memories to use across all projects. Or use the CLI.
+
+Installation barely takes a minute. Supercharge your AI coding agent's memory with fast vectorized search.
 
 ## Features
 
@@ -218,9 +224,12 @@ memextend import ./backup.json --validate-only       # Validate without importin
 ### Web UI
 
 ```bash
-memextend webui                     # Start web UI on localhost:3333
+memextend webui                     # Start web UI in background on localhost:3333
 memextend webui --port 8080         # Custom port
 memextend webui --host 0.0.0.0      # Bind to all interfaces
+memextend webui stop                # Stop the web UI
+memextend webui status              # Check if web UI is running
+memextend webui --foreground        # Run in foreground (blocking)
 ```
 
 The web UI provides:

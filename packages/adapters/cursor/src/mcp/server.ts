@@ -61,7 +61,7 @@ function getCurrentWorkspace(): string {
 const server = new Server(
   {
     name: 'memextend',
-    version: '0.1.2',
+    version: '0.1.5',
   },
   {
     capabilities: {
