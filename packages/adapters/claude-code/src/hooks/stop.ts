@@ -3,7 +3,7 @@
 
 import { createHash, randomUUID } from 'crypto';
 import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { join, basename } from 'path';
 import { homedir } from 'os';
 import { execSync } from 'child_process';
@@ -38,9 +38,36 @@ const CONFIG_PATH = join(MEMEXTEND_DIR, 'config.json');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
 const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
+const CAPTURE_STATE_PATH = join(MEMEXTEND_DIR, 'capture-state.json');
+
+interface CaptureState {
+  [sessionId: string]: {
+    lastCapturedLine: number;
+    capturedIds: string[];
+  };
+}
+
+async function loadCaptureState(): Promise<CaptureState> {
+  try {
+    if (existsSync(CAPTURE_STATE_PATH)) {
+      const content = await readFile(CAPTURE_STATE_PATH, 'utf-8');
+      return JSON.parse(content);
+    }
+  } catch {
+    // Ignore errors, start fresh
+  }
+  return {};
+}
+
+async function saveCaptureState(state: CaptureState): Promise<void> {
+  await writeFile(CAPTURE_STATE_PATH, JSON.stringify(state, null, 2));
+}
 
 async function main(): Promise<void> {
   // Read input from stdin
+  // Log immediately on start
+  log('Stop', 'Hook started at ' + new Date().toISOString());
+
   const chunks: Buffer[] = [];
   for await (const chunk of process.stdin) {
     chunks.push(chunk);
@@ -115,9 +142,24 @@ async function main(): Promise<void> {
     // Create embedding function (uses real model if available, fallback otherwise)
     const embedder = await createEmbedFunction(MODELS_PATH);
 
+    // Load capture state to avoid re-capturing what pre-compact already saved
+    const captureState = await loadCaptureState();
+    const sessionState = captureState[input.session_id] || {
+      lastCapturedLine: 0,
+      capturedIds: []
+    };
+
     // Save each capture as a memory
+    let savedCount = 0;
     for (const capture of captures) {
       const content = formatCaptureContent(capture);
+
+      // Create hash to check if already captured
+      const contentHash = createHash('sha256').update(content).digest('hex').slice(0, 16);
+      if (sessionState.capturedIds.includes(contentHash)) {
+        continue; // Skip - already captured by pre-compact
+      }
+
       const memoryId = randomUUID();
 
       let memory: Memory;
@@ -155,7 +197,17 @@ async function main(): Promise<void> {
       // Generate and store embedding
       const vector = await embedder.embed(content);
       await vectorStore.insertVector(memoryId, vector);
+
+      // Track as captured
+      sessionState.capturedIds.push(contentHash);
+      savedCount++;
     }
+
+    log('Stop', `Saved ${savedCount} new memories (${captures.length - savedCount} already captured)`);
+
+    // Save capture state
+    captureState[input.session_id] = sessionState;
+    await saveCaptureState(captureState);
 
     // Deduplicate highly similar memories to save space
     const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? true;
