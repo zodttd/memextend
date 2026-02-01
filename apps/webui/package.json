@@ -1,6 +1,6 @@
 {
   "name": "@memextend/webui",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Web UI for memextend - view and manage your AI memory",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "dev": "tsc && cp -r src/public dist/ && node dist/server.js"
   },
   "dependencies": {
-    "@memextend/core": "^0.3.6",
+    "@memextend/core": "^0.3.7",
     "express": "^4.18.2"
   },
   "devDependencies": {

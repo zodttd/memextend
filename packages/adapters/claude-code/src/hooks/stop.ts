@@ -210,8 +210,10 @@ async function main(): Promise<void> {
     await saveCaptureState(captureState);
 
     // Deduplicate highly similar memories to save space
-    const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? true;
-    const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.95;
+    // DISABLED - algorithm is too aggressive, deletes nearly everything
+    // TODO: Fix deduplication to only remove near-exact duplicates
+    const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? false;
+    const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.98;
 
     if (dedupeOnPrune) {
       const dedupedIds = await deduplicateStoredMemories(
