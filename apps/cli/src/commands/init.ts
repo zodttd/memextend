@@ -14,7 +14,48 @@ const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
 const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
 
-const CLAUDE_SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
+const CLAUDE_DIR = join(homedir(), '.claude');
+const CLAUDE_SETTINGS_PATH = join(CLAUDE_DIR, 'settings.json');
+const CLAUDE_MD_PATH = join(CLAUDE_DIR, 'CLAUDE.md');
+
+const CLAUDE_MD_TEMPLATE = `# memextend - AI Memory Extension
+
+You have persistent memory across sessions via memextend.
+
+## Available MCP Tools
+
+- **memextend_search** - Search your memories for past decisions, patterns, or context
+  Example: "How did we implement caching?" → Use memextend_search to find relevant memories
+
+- **memextend_save** - Save important decisions or context for this project
+  Example: After making an architectural decision, save it for future reference
+
+- **memextend_save_global** - Save cross-project preferences (coding style, preferred tools)
+  Example: "User prefers TypeScript strict mode" → Save as global preference
+
+- **memextend_forget** - Delete a specific memory by ID
+
+- **memextend_status** - Check memory statistics and system status
+
+## When to Use Memory
+
+**Search memories when:**
+- Starting work on a project you've worked on before
+- The user references past decisions ("like we did before", "as discussed")
+- You need context about project architecture or conventions
+
+**Save memories when:**
+- Making significant architectural decisions
+- Establishing project conventions or patterns
+- The user shares important preferences
+- Completing a major feature or fix
+
+## Memory is Automatic
+
+Memories are automatically captured from your sessions and injected at startup.
+Use the tools above to actively search for more detail or save important context.
+`;
+
 
 const DEFAULT_CONFIG = {
   version: 1,
@@ -95,6 +136,15 @@ export async function initCommand(options: InitOptions): Promise<void> {
       spinner.succeed('Registered hooks and MCP server with Claude Code');
     } else {
       spinner.warn('Could not auto-register with Claude Code (see manual instructions)');
+    }
+
+    // Step 6: Create CLAUDE.md template
+    spinner.start('Creating CLAUDE.md template...');
+    const claudeMdCreated = await createClaudeMd();
+    if (claudeMdCreated) {
+      spinner.succeed('Created ~/.claude/CLAUDE.md with memory tool guidance');
+    } else {
+      spinner.warn('CLAUDE.md already exists (skipped)');
     }
 
     // Done!
@@ -180,6 +230,30 @@ function findPackagePath(): string | null {
   // For now, return null and rely on manual setup
   // In production, this would resolve the npm package location
   return null;
+}
+
+async function createClaudeMd(): Promise<boolean> {
+  try {
+    // Create .claude directory if it doesn't exist
+    await mkdir(CLAUDE_DIR, { recursive: true });
+
+    // Check if CLAUDE.md already exists
+    if (existsSync(CLAUDE_MD_PATH)) {
+      // Check if it already contains memextend section
+      const existing = await readFile(CLAUDE_MD_PATH, 'utf-8');
+      if (existing.includes('memextend')) {
+        return false; // Already has memextend content
+      }
+      // Append to existing file
+      await writeFile(CLAUDE_MD_PATH, existing + '\n\n' + CLAUDE_MD_TEMPLATE);
+    } else {
+      // Create new file
+      await writeFile(CLAUDE_MD_PATH, CLAUDE_MD_TEMPLATE);
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function printManualInstructions(): void {

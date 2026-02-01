@@ -150,11 +150,30 @@ ${chalk.yellow.bold('COMMANDS')}
       ${chalk.dim('• Delete memories')}
       ${chalk.dim('• Search with hybrid search')}
       ${chalk.dim('• View global profiles')}
+      ${chalk.dim('• Configure capture and retrieval settings')}
 
     ${chalk.dim('Examples:')}
       ${chalk.dim('$ memextend webui')}
       ${chalk.dim('$ memextend webui --port 8080')}
       ${chalk.dim('$ memextend webui --host 0.0.0.0 --port 3333')}
+
+  ${chalk.cyan('memextend uninstall')}
+    Remove memextend and all integrations from your system.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-f, --force')}       Skip confirmation prompt
+      ${chalk.dim('-k, --keep-data')}   Keep memories, only remove integrations
+
+    ${chalk.dim('Removes:')}
+      ${chalk.dim('• Claude Code hooks (SessionStart, Stop, PreCompact)')}
+      ${chalk.dim('• Claude Code MCP server registration')}
+      ${chalk.dim('• memextend section from ~/.claude/CLAUDE.md')}
+      ${chalk.dim('• All data in ~/.memextend/ (unless --keep-data)')}
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend uninstall')}
+      ${chalk.dim('$ memextend uninstall --force')}
+      ${chalk.dim('$ memextend uninstall --keep-data')}
 
 ${chalk.yellow.bold('MCP TOOLS (used by Claude during sessions)')}
 
@@ -317,6 +336,7 @@ ${chalk.yellow('Features:')}
   • ${chalk.green('Search')} - Hybrid search (FTS + vector)
   • ${chalk.green('Edit/Delete')} - Modify or remove memories
   • ${chalk.green('Global Profiles')} - View cross-project preferences
+  • ${chalk.green('Settings')} - Configure capture and retrieval options
 
 ${chalk.yellow('Examples:')}
   $ memextend webui                            # Start on localhost:3333
@@ -328,6 +348,32 @@ ${chalk.yellow('Access:')}
 
 ${chalk.dim('Note:')} The web UI is read-only for global profiles.
 Save global profiles using Claude's memextend_save_global tool.
+`,
+    'uninstall': `
+${chalk.cyan.bold('memextend uninstall')}
+
+Remove memextend and all integrations from your system.
+
+${chalk.yellow('Options:')}
+  -f, --force       Skip confirmation prompt
+  -k, --keep-data   Keep memories and data, only remove integrations
+
+${chalk.yellow('What gets removed:')}
+  • Claude Code hooks (SessionStart, Stop, PreCompact)
+  • Claude Code MCP server registration
+  • memextend section from ~/.claude/CLAUDE.md
+  • All data in ~/.memextend/ (unless --keep-data)
+
+${chalk.yellow('Examples:')}
+  $ memextend uninstall              # Interactive uninstall
+  $ memextend uninstall --force      # Skip confirmation
+  $ memextend uninstall --keep-data  # Keep memories for later
+
+${chalk.yellow('Re-installing:')}
+  After using --keep-data, you can reinstall with:
+  $ memextend init
+
+  Your memories will be reconnected automatically.
 `
   };
 

@@ -12,6 +12,7 @@ import { helpCommand } from './commands/help.js';
 import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { webuiCommand } from './commands/webui.js';
+import { uninstallCommand } from './commands/uninstall.js';
 
 const program = new Command();
 
@@ -86,8 +87,15 @@ program
   .action(webuiCommand);
 
 program
+  .command('uninstall')
+  .description('Uninstall memextend and remove all integrations')
+  .option('-f, --force', 'Skip confirmation prompt')
+  .option('-k, --keep-data', 'Keep memories and data, only remove integrations')
+  .action(uninstallCommand);
+
+program
   .command('help [topic]')
-  .description('Show detailed help (topics: status, search, forget, edit, export, import, webui)')
+  .description('Show detailed help (topics: status, search, forget, edit, export, import, webui, uninstall)')
   .action(helpCommand);
 
 program.parse();

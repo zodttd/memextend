@@ -202,7 +202,8 @@ export function formatContextForInjection(context: {
     lines.push('');
   }
 
-  lines.push('Use these memories naturally. Ask if something seems outdated.');
+  lines.push('Use these memories naturally. Use `memextend_search` to find more details.');
+  lines.push('Use `memextend_save` to remember important decisions for future sessions.');
   lines.push('</memextend-context>');
 
   return lines.join('\n');
