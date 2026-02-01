@@ -32,6 +32,10 @@ interface MemextendConfig {
     sessionMaxChars?: number;
     compactMaxChars?: number;
   };
+  storage?: {
+    maxMemoriesPerProject?: number;
+    maxTotalMemories?: number;
+  };
   debug?: boolean;
 }
 
@@ -55,6 +59,10 @@ const DEFAULT_CONFIG: MemextendConfig = {
     deduplicationThreshold: 0.85,
     sessionMaxChars: 10000,
     compactMaxChars: 2000
+  },
+  storage: {
+    maxMemoriesPerProject: 500,
+    maxTotalMemories: 5000
   },
   debug: false
 };
@@ -111,6 +119,10 @@ configRouter.put('/', (req: Request, res: Response) => {
       retrieval: {
         ...currentConfig.retrieval,
         ...updates.retrieval
+      },
+      storage: {
+        ...currentConfig.storage,
+        ...updates.storage
       }
     };
 

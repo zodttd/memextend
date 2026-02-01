@@ -234,6 +234,27 @@ async function main(): Promise<void> {
       capturedCount++;
     }
 
+    // Prune old memories if storage limits are configured
+    const maxPerProject = config.storage?.maxMemoriesPerProject ?? 500;
+    const maxTotal = config.storage?.maxTotalMemories ?? 5000;
+
+    if (maxPerProject > 0 || maxTotal > 0) {
+      const pruneResult = sqlite.pruneMemories({
+        maxPerProject,
+        maxTotal,
+        projectId
+      });
+
+      if (pruneResult.deleted > 0) {
+        log('PreCompact', `Pruned ${pruneResult.deleted} old memories to stay within limits`);
+
+        // Also delete from vector store
+        for (const id of pruneResult.deletedIds) {
+          await lancedb.deleteVector(id);
+        }
+      }
+    }
+
     // Update capture state
     sessionState.lastCapturedLine = lines.length;
     captureState[input.session_id] = sessionState;

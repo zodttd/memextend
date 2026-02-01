@@ -315,6 +315,10 @@ Config file: `~/.memextend/config.json`
     "sessionMaxChars": 10000,
     "compactMaxChars": 2000
   },
+  "storage": {
+    "maxMemoriesPerProject": 500,
+    "maxTotalMemories": 5000
+  },
   "debug": false
 }
 ```
@@ -342,6 +346,13 @@ Config file: `~/.memextend/config.json`
 | `deduplicationThreshold` | `0.85` | Similarity threshold for removing duplicates (0-1) |
 | `sessionMaxChars` | `10000` | Max characters for session start injection (~2,500 tokens) |
 | `compactMaxChars` | `2000` | Max characters for post-compact injection (~500 tokens) |
+
+### Storage Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `maxMemoriesPerProject` | `500` | Max memories per project (0 = unlimited). Oldest are pruned first. |
+| `maxTotalMemories` | `5000` | Max total memories across all projects (0 = unlimited) |
 
 All settings can be configured via the WebUI Settings page (`memextend webui`).
 
@@ -452,6 +463,7 @@ Everything stays on your machine:
 - [x] CLAUDE.md template for memory tool guidance
 - [x] Smart memory deduplication (removes similar memories, keeps newest)
 - [x] Configurable character limits for session start vs post-compact injection
+- [x] Storage limits with automatic pruning (oldest memories deleted when limits exceeded)
 - [ ] VS Code extension for Cursor (better session detection)
 - [ ] OpenCode hooks (when/if supported upstream)
 

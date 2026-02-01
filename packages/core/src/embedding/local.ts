@@ -35,9 +35,12 @@ export class LocalEmbedding {
     }
 
     // Dynamic import of node-llama-cpp to avoid ESM/CJS issues
-    const { getLlama } = await import('node-llama-cpp');
+    const { getLlama, LlamaLogLevel } = await import('node-llama-cpp');
 
-    const llama = await getLlama();
+    // Suppress node-llama-cpp warnings (tokenizer warnings are expected with this model)
+    const llama = await getLlama({
+      logLevel: LlamaLogLevel.error  // Only show errors, not warnings
+    });
     const model = await llama.loadModel({ modelPath });
     const context = await model.createEmbeddingContext();
 

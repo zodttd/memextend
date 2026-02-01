@@ -715,6 +715,10 @@ function populateSettingsForm(config) {
   document.getElementById('setting-session-max-chars').value = config.retrieval?.sessionMaxChars ?? 10000;
   document.getElementById('setting-compact-max-chars').value = config.retrieval?.compactMaxChars ?? 2000;
 
+  // Storage limits
+  document.getElementById('setting-max-per-project').value = config.storage?.maxMemoriesPerProject ?? 500;
+  document.getElementById('setting-max-total').value = config.storage?.maxTotalMemories ?? 5000;
+
   // System settings
   document.getElementById('setting-debug').checked = config.debug ?? false;
 }
@@ -740,6 +744,10 @@ function getSettingsFromForm() {
       deduplicationThreshold: parseFloat(document.getElementById('setting-dedup-threshold').value),
       sessionMaxChars: parseInt(document.getElementById('setting-session-max-chars').value, 10),
       compactMaxChars: parseInt(document.getElementById('setting-compact-max-chars').value, 10)
+    },
+    storage: {
+      maxMemoriesPerProject: parseInt(document.getElementById('setting-max-per-project').value, 10),
+      maxTotalMemories: parseInt(document.getElementById('setting-max-total').value, 10)
     },
     debug: document.getElementById('setting-debug').checked
   };

@@ -244,6 +244,84 @@ export class SQLiteStorage {
     return row.count;
   }
 
+  getMemoryCountByProject(projectId: string): number {
+    const row = this.db.prepare(
+      'SELECT COUNT(*) as count FROM memories WHERE project_id = ?'
+    ).get(projectId) as any;
+    return row.count;
+  }
+
+  /**
+   * Get IDs of oldest memories for a project, exceeding the limit
+   * @returns Array of memory IDs to delete (oldest first)
+   */
+  getOldestMemoryIds(projectId: string | null, limit: number): string[] {
+    let query: string;
+    let params: any[];
+
+    if (projectId) {
+      query = `
+        SELECT id FROM memories
+        WHERE project_id = ?
+        ORDER BY created_at ASC
+        LIMIT ?
+      `;
+      params = [projectId, limit];
+    } else {
+      query = `
+        SELECT id FROM memories
+        ORDER BY created_at ASC
+        LIMIT ?
+      `;
+      params = [limit];
+    }
+
+    const rows = this.db.prepare(query).all(...params) as any[];
+    return rows.map(row => row.id);
+  }
+
+  /**
+   * Prune memories to stay within limits
+   * @returns Number of memories deleted
+   */
+  pruneMemories(options: {
+    maxPerProject?: number;
+    maxTotal?: number;
+    projectId?: string;
+  }): { deleted: number; deletedIds: string[] } {
+    const deletedIds: string[] = [];
+
+    // Prune per-project if limit specified
+    if (options.maxPerProject && options.maxPerProject > 0 && options.projectId) {
+      const count = this.getMemoryCountByProject(options.projectId);
+      if (count > options.maxPerProject) {
+        const excess = count - options.maxPerProject;
+        const idsToDelete = this.getOldestMemoryIds(options.projectId, excess);
+        for (const id of idsToDelete) {
+          this.deleteMemory(id);
+          deletedIds.push(id);
+        }
+      }
+    }
+
+    // Prune total if limit specified
+    if (options.maxTotal && options.maxTotal > 0) {
+      const count = this.getMemoryCount();
+      if (count > options.maxTotal) {
+        const excess = count - options.maxTotal;
+        const idsToDelete = this.getOldestMemoryIds(null, excess);
+        for (const id of idsToDelete) {
+          if (!deletedIds.includes(id)) {
+            this.deleteMemory(id);
+            deletedIds.push(id);
+          }
+        }
+      }
+    }
+
+    return { deleted: deletedIds.length, deletedIds };
+  }
+
   private rowToMemory(row: any): Memory {
     return {
       id: row.id,

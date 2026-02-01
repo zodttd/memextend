@@ -342,6 +342,39 @@
               </div>
             </div>
 
+            <!-- Storage Limits Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <h3>Storage Limits</h3>
+              </div>
+              <p class="settings-card-desc">Automatic pruning to prevent unlimited storage growth. Oldest memories are deleted when limits are exceeded.</p>
+
+              <div class="settings-group">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-max-per-project">Max Memories Per Project</label>
+                    <span class="setting-hint">Limit per project (0 = unlimited). Oldest are pruned first.</span>
+                  </div>
+                  <input type="number" id="setting-max-per-project" class="setting-input" value="500" min="0" max="10000" step="100">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-max-total">Max Total Memories</label>
+                    <span class="setting-hint">Total limit across all projects (0 = unlimited)</span>
+                  </div>
+                  <input type="number" id="setting-max-total" class="setting-input" value="5000" min="0" max="100000" step="500">
+                </div>
+              </div>
+            </div>
+
             <!-- System Settings Card -->
             <div class="settings-card">
               <div class="settings-card-header">

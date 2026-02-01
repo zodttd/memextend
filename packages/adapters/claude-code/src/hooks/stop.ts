@@ -156,6 +156,27 @@ async function main(): Promise<void> {
       await lancedb.insertVector(memoryId, vector);
     }
 
+    // Prune old memories if storage limits are configured
+    const maxPerProject = config.storage?.maxMemoriesPerProject ?? 500;
+    const maxTotal = config.storage?.maxTotalMemories ?? 5000;
+
+    if (maxPerProject > 0 || maxTotal > 0) {
+      const pruneResult = sqlite.pruneMemories({
+        maxPerProject,
+        maxTotal,
+        projectId
+      });
+
+      if (pruneResult.deleted > 0) {
+        log('Stop', `Pruned ${pruneResult.deleted} old memories to stay within limits`);
+
+        // Also delete from vector store
+        for (const id of pruneResult.deletedIds) {
+          await lancedb.deleteVector(id);
+        }
+      }
+    }
+
     // Close storage and embedder
     sqlite.close();
     await lancedb.close();
