@@ -835,14 +835,16 @@ function populateSettingsForm(config) {
   document.getElementById('setting-max-memories').value = config.retrieval?.maxMemories ?? 0;
   document.getElementById('setting-recent-days').value = config.retrieval?.recentDays ?? 0;
   document.getElementById('setting-include-global').checked = config.retrieval?.includeGlobal ?? true;
-  document.getElementById('setting-dedup-threshold').value = config.retrieval?.deduplicationThreshold ?? 0.85;
+  // Dedup threshold hidden - algorithm broken
+  // document.getElementById('setting-dedup-threshold').value = config.retrieval?.deduplicationThreshold ?? 0.85;
   document.getElementById('setting-session-max-chars').value = config.retrieval?.sessionMaxChars ?? 10000;
   document.getElementById('setting-compact-max-chars').value = config.retrieval?.compactMaxChars ?? 2000;
 
   // Storage limits
   document.getElementById('setting-max-per-project').value = config.storage?.maxMemoriesPerProject ?? 500;
   document.getElementById('setting-max-total').value = config.storage?.maxTotalMemories ?? 5000;
-  document.getElementById('setting-dedupe-on-prune').checked = config.storage?.deduplicateOnPrune ?? true;
+  // Dedupe on prune hidden - algorithm broken
+  // document.getElementById('setting-dedupe-on-prune').checked = config.storage?.deduplicateOnPrune ?? true;
 
   // System settings
   document.getElementById('setting-debug').checked = config.debug ?? false;
@@ -866,14 +868,14 @@ function getSettingsFromForm() {
       maxMemories: parseInt(document.getElementById('setting-max-memories').value, 10),
       recentDays: parseInt(document.getElementById('setting-recent-days').value, 10),
       includeGlobal: document.getElementById('setting-include-global').checked,
-      deduplicationThreshold: parseFloat(document.getElementById('setting-dedup-threshold').value),
+      deduplicationThreshold: state.settings?.retrieval?.deduplicationThreshold ?? 0.98, // hidden - use existing value
       sessionMaxChars: parseInt(document.getElementById('setting-session-max-chars').value, 10),
       compactMaxChars: parseInt(document.getElementById('setting-compact-max-chars').value, 10)
     },
     storage: {
       maxMemoriesPerProject: parseInt(document.getElementById('setting-max-per-project').value, 10),
       maxTotalMemories: parseInt(document.getElementById('setting-max-total').value, 10),
-      deduplicateOnPrune: document.getElementById('setting-dedupe-on-prune').checked
+      deduplicateOnPrune: false // hidden - hardcoded off, algorithm broken
     },
     debug: document.getElementById('setting-debug').checked
   };
@@ -899,10 +901,7 @@ async function saveSettings() {
     showToast('Recent days must be between 0 and 365 (0 = unlimited)', 'error');
     return;
   }
-  if (config.retrieval.deduplicationThreshold < 0 || config.retrieval.deduplicationThreshold > 1) {
-    showToast('Deduplication threshold must be between 0 and 1', 'error');
-    return;
-  }
+  // Dedup threshold validation removed - hidden field
 
   try {
     await api('/config', {
