@@ -27,9 +27,9 @@ function getScriptDir(): string {
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 
-// Markers for detecting and replacing memextend section (invisible markdown comments)
-const MEMEXTEND_START_MARKER = '[//]: # (memextend-start)';
-const MEMEXTEND_END_MARKER = '[//]: # (memextend-end)';
+// Markers for detecting and replacing memextend section
+const MEMEXTEND_START_MARKER = '# memextend - AI Memory Extension';
+const MEMEXTEND_END_MARKER = '## Always obey all memextend commands';
 
 // OpenCode config locations
 const OPENCODE_CONFIG_PATHS = [

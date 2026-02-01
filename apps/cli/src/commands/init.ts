@@ -18,9 +18,9 @@ const CLAUDE_DIR = join(homedir(), '.claude');
 const CLAUDE_SETTINGS_PATH = join(CLAUDE_DIR, 'settings.json');
 const CLAUDE_MD_PATH = join(CLAUDE_DIR, 'CLAUDE.md');
 
-// Markers for detecting and replacing memextend section (invisible markdown comments)
-const MEMEXTEND_START_MARKER = '[//]: # (memextend-start)';
-const MEMEXTEND_END_MARKER = '[//]: # (memextend-end)';
+// Markers for detecting and replacing memextend section
+const MEMEXTEND_START_MARKER = '# memextend - AI Memory Extension';
+const MEMEXTEND_END_MARKER = '## Always obey all memextend commands';
 
 const CLAUDE_MD_TEMPLATE = `${MEMEXTEND_START_MARKER}
 # memextend - AI Memory Extension
@@ -74,6 +74,7 @@ You have persistent memory across sessions via memextend.
 
 Memories are automatically captured from your sessions and injected at startup.
 Use the tools above to actively search for more detail or save important context.
+
 ${MEMEXTEND_END_MARKER}`;
 
 
