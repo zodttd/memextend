@@ -41,7 +41,7 @@ You have persistent memory across sessions via memextend.
 
 **ALWAYS search memories before asking the user about project history.** Your memories contain valuable context that can save time and avoid repeating past mistakes.
 
-**CRITICAL: If you can't find something in the codebase, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
+**CRITICAL: If you can't find something, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
 
 **Search memories when:**
 - Starting work on a project you've worked on before
