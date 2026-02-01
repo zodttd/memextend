@@ -23,6 +23,12 @@ interface MemextendConfig {
       Task?: boolean;
     };
   };
+  retrieval?: {
+    autoInject?: boolean;
+    maxMemories?: number;
+    recentDays?: number;
+    includeGlobal?: boolean;
+  };
   debug?: boolean;
 }
 
@@ -37,6 +43,12 @@ const DEFAULT_CONFIG: MemextendConfig = {
       Bash: false,
       Task: false
     }
+  },
+  retrieval: {
+    autoInject: true,
+    maxMemories: 10,
+    recentDays: 7,
+    includeGlobal: true
   },
   debug: false
 };
@@ -89,6 +101,10 @@ configRouter.put('/', (req: Request, res: Response) => {
           ...currentConfig.capture?.tools,
           ...updates.capture?.tools
         }
+      },
+      retrieval: {
+        ...currentConfig.retrieval,
+        ...updates.retrieval
       }
     };
 

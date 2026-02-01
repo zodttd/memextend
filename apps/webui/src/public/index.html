@@ -256,6 +256,60 @@
               </div>
             </div>
 
+            <!-- Retrieval Settings Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                  </svg>
+                </div>
+                <h3>Memory Retrieval</h3>
+              </div>
+              <p class="settings-card-desc">Control how memories are injected into new sessions.</p>
+
+              <div class="settings-group">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-auto-inject">Auto-Inject Memories</label>
+                    <span class="setting-hint">Automatically inject relevant memories at session start</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-auto-inject" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-max-memories">Max Memories</label>
+                    <span class="setting-hint">Maximum number of memories to inject per session</span>
+                  </div>
+                  <input type="number" id="setting-max-memories" class="setting-input" value="10" min="1" max="50">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-recent-days">Recent Days</label>
+                    <span class="setting-hint">How many days back to look for recent memories</span>
+                  </div>
+                  <input type="number" id="setting-recent-days" class="setting-input" value="7" min="1" max="90">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-include-global">Include Global Profile</label>
+                    <span class="setting-hint">Include cross-project preferences in session context</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-include-global" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <!-- System Settings Card -->
             <div class="settings-card">
               <div class="settings-card-header">

@@ -610,6 +610,12 @@ function populateSettingsForm(config) {
   document.getElementById('setting-tool-bash').checked = config.capture?.tools?.Bash ?? false;
   document.getElementById('setting-tool-task').checked = config.capture?.tools?.Task ?? false;
 
+  // Retrieval settings
+  document.getElementById('setting-auto-inject').checked = config.retrieval?.autoInject ?? true;
+  document.getElementById('setting-max-memories').value = config.retrieval?.maxMemories ?? 10;
+  document.getElementById('setting-recent-days').value = config.retrieval?.recentDays ?? 7;
+  document.getElementById('setting-include-global').checked = config.retrieval?.includeGlobal ?? true;
+
   // System settings
   document.getElementById('setting-debug').checked = config.debug ?? false;
 }
@@ -627,6 +633,12 @@ function getSettingsFromForm() {
         Task: document.getElementById('setting-tool-task').checked
       }
     },
+    retrieval: {
+      autoInject: document.getElementById('setting-auto-inject').checked,
+      maxMemories: parseInt(document.getElementById('setting-max-memories').value, 10),
+      recentDays: parseInt(document.getElementById('setting-recent-days').value, 10),
+      includeGlobal: document.getElementById('setting-include-global').checked
+    },
     debug: document.getElementById('setting-debug').checked
   };
 }
@@ -641,6 +653,14 @@ async function saveSettings() {
   }
   if (config.capture.maxToolOutputLength < 100 || config.capture.maxToolOutputLength > 50000) {
     showToast('Max tool output length must be between 100 and 50,000', 'error');
+    return;
+  }
+  if (config.retrieval.maxMemories < 1 || config.retrieval.maxMemories > 50) {
+    showToast('Max memories must be between 1 and 50', 'error');
+    return;
+  }
+  if (config.retrieval.recentDays < 1 || config.retrieval.recentDays > 90) {
+    showToast('Recent days must be between 1 and 90', 'error');
     return;
   }
 
