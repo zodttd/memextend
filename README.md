@@ -353,6 +353,7 @@ Config file: `~/.memextend/config.json`
 |---------|---------|-------------|
 | `maxMemoriesPerProject` | `500` | Max memories per project (0 = unlimited). Oldest are pruned first. |
 | `maxTotalMemories` | `5000` | Max total memories across all projects (0 = unlimited) |
+| `deduplicateOnPrune` | `true` | Remove highly similar memories during pruning (uses deduplicationThreshold) |
 
 All settings can be configured via the WebUI Settings page (`memextend webui`).
 

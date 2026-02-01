@@ -20,6 +20,7 @@ import {
   isTextCapture,
   isToolCapture,
   createEmbedFunction,
+  cosineSimilarity,
   type Memory,
   type Capture
 } from '@memextend/core';
@@ -234,6 +235,19 @@ async function main(): Promise<void> {
       capturedCount++;
     }
 
+    // Deduplicate highly similar memories to save space
+    const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? true;
+    const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.85;
+
+    if (dedupeOnPrune) {
+      const dedupedIds = await deduplicateStoredMemories(
+        sqlite, lancedb, projectId, dedupeThreshold
+      );
+      if (dedupedIds.length > 0) {
+        log('PreCompact', `Deduplicated ${dedupedIds.length} similar memories`);
+      }
+    }
+
     // Prune old memories if storage limits are configured
     const maxPerProject = config.storage?.maxMemoriesPerProject ?? 500;
     const maxTotal = config.storage?.maxTotalMemories ?? 5000;
@@ -310,6 +324,64 @@ async function loadConfig(): Promise<any> {
 
 function outputResult(result: HookOutput): void {
   console.log(JSON.stringify(result));
+}
+
+/**
+ * Deduplicate stored memories by removing older ones that are highly similar to newer ones.
+ * Uses cosine similarity on embeddings. Keeps the newest memory when duplicates found.
+ */
+async function deduplicateStoredMemories(
+  sqlite: SQLiteStorage,
+  lancedb: LanceDBStorage,
+  projectId: string,
+  threshold: number
+): Promise<string[]> {
+  const deletedIds: string[] = [];
+
+  // Get all memories for this project, sorted by date (newest first)
+  const memories = sqlite.getRecentMemories(projectId, 0, 0); // 0 = unlimited
+
+  if (memories.length < 2) return deletedIds;
+
+  // Get vectors for all memories
+  const memoryIds = memories.map(m => m.id);
+  const vectors = await lancedb.getVectorsByIds(memoryIds);
+
+  if (vectors.size < 2) return deletedIds;
+
+  // Track which memories to keep (newest first wins)
+  const keepIds = new Set<string>();
+  const keptVectors: Array<{ id: string; vector: number[] }> = [];
+
+  for (const memory of memories) {
+    const vector = vectors.get(memory.id);
+    if (!vector) {
+      keepIds.add(memory.id); // Keep if no vector
+      continue;
+    }
+
+    // Check if this memory is too similar to any kept memory
+    let isDuplicate = false;
+    for (const kept of keptVectors) {
+      const similarity = cosineSimilarity(vector, kept.vector);
+      if (similarity > threshold) {
+        isDuplicate = true;
+        break;
+      }
+    }
+
+    if (!isDuplicate) {
+      keepIds.add(memory.id);
+      keptVectors.push({ id: memory.id, vector });
+    } else {
+      // Delete this duplicate
+      sqlite.deleteMemory(memory.id);
+      await lancedb.deleteVector(memory.id);
+      deletedIds.push(memory.id);
+    }
+  }
+
+  return deletedIds;
 }
 
 main().catch(error => {

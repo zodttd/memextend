@@ -35,6 +35,7 @@ interface MemextendConfig {
   storage?: {
     maxMemoriesPerProject?: number;
     maxTotalMemories?: number;
+    deduplicateOnPrune?: boolean;
   };
   debug?: boolean;
 }
@@ -62,7 +63,8 @@ const DEFAULT_CONFIG: MemextendConfig = {
   },
   storage: {
     maxMemoriesPerProject: 500,
-    maxTotalMemories: 5000
+    maxTotalMemories: 5000,
+    deduplicateOnPrune: true
   },
   debug: false
 };

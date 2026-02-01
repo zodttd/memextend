@@ -718,6 +718,7 @@ function populateSettingsForm(config) {
   // Storage limits
   document.getElementById('setting-max-per-project').value = config.storage?.maxMemoriesPerProject ?? 500;
   document.getElementById('setting-max-total').value = config.storage?.maxTotalMemories ?? 5000;
+  document.getElementById('setting-dedupe-on-prune').checked = config.storage?.deduplicateOnPrune ?? true;
 
   // System settings
   document.getElementById('setting-debug').checked = config.debug ?? false;
@@ -747,7 +748,8 @@ function getSettingsFromForm() {
     },
     storage: {
       maxMemoriesPerProject: parseInt(document.getElementById('setting-max-per-project').value, 10),
-      maxTotalMemories: parseInt(document.getElementById('setting-max-total').value, 10)
+      maxTotalMemories: parseInt(document.getElementById('setting-max-total').value, 10),
+      deduplicateOnPrune: document.getElementById('setting-dedupe-on-prune').checked
     },
     debug: document.getElementById('setting-debug').checked
   };
