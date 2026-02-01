@@ -155,13 +155,11 @@ async function setupCursor(): Promise<void> {
           const after = existingContent.substring(endIdx);
           await writeFile(cursorrulesTarget, before + sourceContent + after);
           console.log('Agent instructions updated in .cursorrules.\n');
-        } else if (existingContent.includes('memextend')) {
-          // Legacy format without markers - don't modify
-          console.log('Note: .cursorrules already contains memextend instructions (legacy format).\n');
         } else {
-          // Append to existing file
-          await writeFile(cursorrulesTarget, existingContent + '\n\n' + sourceContent);
-          console.log('Agent instructions appended to existing .cursorrules.\n');
+          // No markers - prepend to existing file (put memextend first)
+          const trimmedExisting = existingContent.trim();
+          await writeFile(cursorrulesTarget, sourceContent + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
+          console.log('Agent instructions prepended to existing .cursorrules.\n');
         }
       }
     } catch (error) {

@@ -141,13 +141,11 @@ async function setupOpenCode(): Promise<void> {
           const after = existingContent.substring(endIdx);
           await writeFile(agentsMdTarget, before + sourceContent + after);
           console.log(`Agent instructions updated in AGENTS.md at ${agentsMdTarget}\n`);
-        } else if (existingContent.includes('memextend')) {
-          // Legacy format without markers - don't modify
-          console.log(`Note: AGENTS.md already contains memextend instructions (legacy format).\n`);
         } else {
-          // Append to existing file
-          await writeFile(agentsMdTarget, existingContent + '\n\n' + sourceContent);
-          console.log(`Agent instructions appended to existing AGENTS.md at ${agentsMdTarget}\n`);
+          // No markers - prepend to existing file (put memextend first)
+          const trimmedExisting = existingContent.trim();
+          await writeFile(agentsMdTarget, sourceContent + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
+          console.log(`Agent instructions prepended to existing AGENTS.md at ${agentsMdTarget}\n`);
         }
       }
     } catch (error) {
