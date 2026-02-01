@@ -273,24 +273,7 @@ async function createClaudeMd(): Promise<boolean> {
         return true; // Updated existing section
       }
 
-      // Check if it has the start marker but no end marker (legacy format)
-      if (existing.includes(MEMEXTEND_START_MARKER)) {
-        // Remove old memextend section and prepend new one
-        const startIdx = existing.indexOf(MEMEXTEND_START_MARKER);
-        const afterStart = existing.substring(startIdx + MEMEXTEND_START_MARKER.length);
-        const nextHeadingMatch = afterStart.match(/\n# [^#]/);
-        let userContent: string;
-        if (nextHeadingMatch && nextHeadingMatch.index !== undefined) {
-          userContent = existing.substring(0, startIdx) + afterStart.substring(nextHeadingMatch.index);
-        } else {
-          userContent = existing.substring(0, startIdx);
-        }
-        userContent = userContent.trim();
-        await writeFile(CLAUDE_MD_PATH, CLAUDE_MD_TEMPLATE + (userContent ? '\n\n' + userContent : '') + '\n');
-        return true;
-      }
-
-      // No memextend content - prepend to existing file (put memextend first)
+      // No memextend markers - prepend to existing file (put memextend first)
       const trimmedExisting = existing.trim();
       await writeFile(CLAUDE_MD_PATH, CLAUDE_MD_TEMPLATE + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
     } else {

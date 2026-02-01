@@ -163,30 +163,20 @@ async function cleanupClaudeMd(): Promise<void> {
   try {
     const content = await readFile(CLAUDE_MD_PATH, 'utf-8');
 
-    let cleaned = content;
-
-    // Try to remove using markers first (new format)
-    if (content.includes(MEMEXTEND_START_MARKER) && content.includes(MEMEXTEND_END_MARKER)) {
-      const startIdx = content.indexOf(MEMEXTEND_START_MARKER);
-      const endIdx = content.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
-      cleaned = content.substring(0, startIdx) + content.substring(endIdx);
-    } else if (content.includes(MEMEXTEND_START_MARKER)) {
-      // Legacy format without end marker - remove from start marker to next top-level heading
-      const startIdx = content.indexOf(MEMEXTEND_START_MARKER);
-      const afterStart = content.substring(startIdx + MEMEXTEND_START_MARKER.length);
-      const nextHeadingMatch = afterStart.match(/\n# [^#]/);
-      if (nextHeadingMatch && nextHeadingMatch.index !== undefined) {
-        cleaned = content.substring(0, startIdx) + afterStart.substring(nextHeadingMatch.index);
-      } else {
-        // No next heading, remove everything after start marker
-        cleaned = content.substring(0, startIdx);
-      }
+    // Only remove if both markers exist
+    if (!content.includes(MEMEXTEND_START_MARKER) || !content.includes(MEMEXTEND_END_MARKER)) {
+      return; // No memextend section to remove
     }
+
+    // Remove the memextend section between markers
+    const startIdx = content.indexOf(MEMEXTEND_START_MARKER);
+    const endIdx = content.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
+    let cleaned = content.substring(0, startIdx) + content.substring(endIdx);
 
     // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
 
-    // Always write back the file, even if empty (don't delete user's CLAUDE.md)
+    // Write back the file (keep it even if empty)
     await writeFile(CLAUDE_MD_PATH, cleaned.length > 0 ? cleaned + '\n' : '');
   } catch {
     // Ignore errors
