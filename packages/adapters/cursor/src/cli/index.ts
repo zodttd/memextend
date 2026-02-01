@@ -35,19 +35,11 @@ const CURSOR_CONFIG_PATHS = [
 
 /**
  * Get the directory containing this script.
- * Works in both ESM and bundled CJS contexts.
+ * When bundled with esbuild as CJS, __dirname is injected.
  */
 function getScriptDir(): string {
-  // When bundled with esbuild as CJS, __dirname is available
-  // When running as ESM, we need import.meta.url
-  // @ts-ignore - __dirname may or may not exist
-  if (typeof __dirname !== 'undefined') {
-    // @ts-ignore
-    return __dirname;
-  }
-  // ESM fallback - only used in development
-  const { fileURLToPath } = require('url');
-  return dirname(fileURLToPath(import.meta.url));
+  // @ts-ignore - __dirname is injected by esbuild when bundling as CJS
+  return __dirname;
 }
 
 function getMcpServerPath(): string {
