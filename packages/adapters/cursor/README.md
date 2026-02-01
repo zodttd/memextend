@@ -210,6 +210,16 @@ memextend-cursor-inject --clipboard
 memextend-cursor-inject --format json
 ```
 
+## Agent Instructions
+
+To give Claude memory guidance in Cursor, copy the included `.cursorrules` file to your project root:
+
+```bash
+cp node_modules/@memextend/cursor/.cursorrules .cursorrules
+```
+
+This file contains instructions for when to search and save memories. Cursor will automatically include it in Claude's context.
+
 ## Cursor Integration Tips
 
 ### Starting a Session
@@ -229,23 +239,6 @@ Save important decisions as you make them:
 Search when you need to remember:
 
 > "Search memories for how we handle error logging"
-
-### When to Search Memory
-
-**ALWAYS search memories before asking the user about project history.** Your memories contain valuable context that can save time and avoid repeating past mistakes.
-
-**CRITICAL: If you can't find something, SEARCH YOUR MEMORIES.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously.
-
-**Search memories when:**
-- Starting work on a project you've worked on before
-- The user references past decisions ("like we did before", "as discussed")
-- You need context about project architecture or conventions
-- **Debugging issues** - search for previous attempts, fixes, and what was tried before
-- **Understanding project history** - how features were implemented and why
-- The current approach isn't working - past memories may reveal what was already tried
-- You're unsure about project conventions or patterns
-- **You can't find a file, function, or pattern** - it may have been discussed or located in a previous session
-- **Before giving up** - always check memories as a last resort before telling the user you can't find something
 
 ### Ending a Session
 
