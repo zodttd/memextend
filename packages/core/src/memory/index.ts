@@ -21,4 +21,6 @@ export type {
   ConfigurableTool
 } from './capture.js';
 export { MemoryRetriever, formatContextForInjection } from './retrieve.js';
-export type { EmbedFunction, MemoryRetrieverOptions } from './retrieve.js';
+export type { EmbedFunction, MemoryRetrieverOptions, FormatOptions } from './retrieve.js';
+export { deduplicateMemories, getDeduplicationStats } from './deduplicate.js';
+export type { DeduplicationOptions } from './deduplicate.js';

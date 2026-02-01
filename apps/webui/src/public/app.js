@@ -711,6 +711,9 @@ function populateSettingsForm(config) {
   document.getElementById('setting-max-memories').value = config.retrieval?.maxMemories ?? 0;
   document.getElementById('setting-recent-days').value = config.retrieval?.recentDays ?? 0;
   document.getElementById('setting-include-global').checked = config.retrieval?.includeGlobal ?? true;
+  document.getElementById('setting-dedup-threshold').value = config.retrieval?.deduplicationThreshold ?? 0.85;
+  document.getElementById('setting-session-max-chars').value = config.retrieval?.sessionMaxChars ?? 10000;
+  document.getElementById('setting-compact-max-chars').value = config.retrieval?.compactMaxChars ?? 2000;
 
   // System settings
   document.getElementById('setting-debug').checked = config.debug ?? false;
@@ -733,7 +736,10 @@ function getSettingsFromForm() {
       autoInject: document.getElementById('setting-auto-inject').checked,
       maxMemories: parseInt(document.getElementById('setting-max-memories').value, 10),
       recentDays: parseInt(document.getElementById('setting-recent-days').value, 10),
-      includeGlobal: document.getElementById('setting-include-global').checked
+      includeGlobal: document.getElementById('setting-include-global').checked,
+      deduplicationThreshold: parseFloat(document.getElementById('setting-dedup-threshold').value),
+      sessionMaxChars: parseInt(document.getElementById('setting-session-max-chars').value, 10),
+      compactMaxChars: parseInt(document.getElementById('setting-compact-max-chars').value, 10)
     },
     debug: document.getElementById('setting-debug').checked
   };
@@ -757,6 +763,10 @@ async function saveSettings() {
   }
   if (config.retrieval.recentDays < 0 || config.retrieval.recentDays > 365) {
     showToast('Recent days must be between 0 and 365 (0 = unlimited)', 'error');
+    return;
+  }
+  if (config.retrieval.deduplicationThreshold < 0 || config.retrieval.deduplicationThreshold > 1) {
+    showToast('Deduplication threshold must be between 0 and 1', 'error');
     return;
   }
 

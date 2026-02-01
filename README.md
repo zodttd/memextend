@@ -10,6 +10,8 @@ memextend gives Claude Code (and other AI coding tools) persistent memory across
 - **Fully Local** - No cloud, no API costs, complete privacy
 - **Hybrid Search** - Keyword (FTS5) + semantic (vector) search with RRF fusion
 - **Auto-Inject** - Relevant memories loaded on session start
+- **Smart Deduplication** - Removes similar memories, keeping newest versions
+- **Character Limits** - Configurable injection sizes for session start vs post-compact
 - **On-Demand Search** - MCP tools for mid-session memory queries
 - **Per-Project + Global** - Project-specific and cross-project memories
 - **Extensible** - Adapter architecture for multiple AI tools
@@ -109,9 +111,16 @@ This ensures important context survives long sessions where compaction occurs.
 When a new session starts, memextend:
 1. Identifies your project (via git root hash)
 2. Retrieves relevant memories (recent work + semantic matches)
-3. Includes your global preferences
-4. Injects context automatically via `<memextend-context>` tag
-5. Includes usage hints for `memextend_search` and `memextend_save`
+3. **Deduplicates** similar memories (keeps newest version of each topic)
+4. Includes your global preferences
+5. **Applies character limits** to keep injection size reasonable
+6. Injects context automatically via `<memextend-context>` tag
+7. Includes usage hints for `memextend_search` and `memextend_save`
+
+**Smart Injection:**
+- Session start uses richer context (default 10,000 chars ≈ 2,500 tokens)
+- Post-compaction uses minimal context (default 2,000 chars ≈ 500 tokens)
+- Deduplication removes memories >85% similar, keeping only the newest
 
 ### Search
 
@@ -301,7 +310,10 @@ Config file: `~/.memextend/config.json`
     "autoInject": true,
     "maxMemories": 0,
     "recentDays": 0,
-    "includeGlobal": true
+    "includeGlobal": true,
+    "deduplicationThreshold": 0.85,
+    "sessionMaxChars": 10000,
+    "compactMaxChars": 2000
   },
   "debug": false
 }
@@ -324,9 +336,12 @@ Config file: `~/.memextend/config.json`
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `autoInject` | `true` | Auto-inject memories at session start |
-| `maxMemories` | `0` | Maximum memories to inject (0 = unlimited) |
+| `maxMemories` | `0` | Maximum memories to retrieve (0 = unlimited) |
 | `recentDays` | `0` | Days to look back for memories (0 = unlimited) |
 | `includeGlobal` | `true` | Include global profile in injection |
+| `deduplicationThreshold` | `0.85` | Similarity threshold for removing duplicates (0-1) |
+| `sessionMaxChars` | `10000` | Max characters for session start injection (~2,500 tokens) |
+| `compactMaxChars` | `2000` | Max characters for post-compact injection (~500 tokens) |
 
 All settings can be configured via the WebUI Settings page (`memextend webui`).
 
@@ -435,6 +450,8 @@ Everything stays on your machine:
 - [x] Reasoning capture (Claude's explanatory responses)
 - [x] Uninstall command with data preservation option
 - [x] CLAUDE.md template for memory tool guidance
+- [x] Smart memory deduplication (removes similar memories, keeps newest)
+- [x] Configurable character limits for session start vs post-compact injection
 - [ ] VS Code extension for Cursor (better session detection)
 - [ ] OpenCode hooks (when/if supported upstream)
 

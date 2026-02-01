@@ -375,6 +375,15 @@ ${chalk.yellow('Features:')}
   • ${chalk.green('Global Profiles')} - Manage cross-project preferences
   • ${chalk.green('Settings')} - Configure capture and retrieval options
 
+${chalk.yellow('Retrieval Settings (in WebUI):')}
+  • ${chalk.dim('Auto-Inject')} - Enable/disable memory injection at session start
+  • ${chalk.dim('Max Memories')} - Limit memories retrieved (0 = unlimited)
+  • ${chalk.dim('Recent Days')} - Only retrieve memories from last N days (0 = unlimited)
+  • ${chalk.dim('Include Global')} - Include global profile in injections
+  • ${chalk.dim('Deduplication Threshold')} - Similarity threshold for removing duplicates (0.85 default)
+  • ${chalk.dim('Session Max Chars')} - Max characters at session start (10000 ≈ 2500 tokens)
+  • ${chalk.dim('Compact Max Chars')} - Max characters after compaction (2000 ≈ 500 tokens)
+
 ${chalk.yellow('Examples:')}
   $ memextend webui                            # Start on localhost:3333
   $ memextend webui --port 8080                # Custom port

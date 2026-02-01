@@ -28,6 +28,9 @@ interface MemextendConfig {
     maxMemories?: number;
     recentDays?: number;
     includeGlobal?: boolean;
+    deduplicationThreshold?: number;
+    sessionMaxChars?: number;
+    compactMaxChars?: number;
   };
   debug?: boolean;
 }
@@ -48,7 +51,10 @@ const DEFAULT_CONFIG: MemextendConfig = {
     autoInject: true,
     maxMemories: 0,
     recentDays: 0,
-    includeGlobal: true
+    includeGlobal: true,
+    deduplicationThreshold: 0.85,
+    sessionMaxChars: 10000,
+    compactMaxChars: 2000
   },
   debug: false
 };

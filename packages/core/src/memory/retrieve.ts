@@ -162,44 +162,112 @@ export class MemoryRetriever {
   }
 }
 
+export interface FormatOptions {
+  /**
+   * Maximum total characters for the formatted output.
+   * Memories are excluded if adding them would exceed this limit.
+   * Default: 0 (unlimited)
+   */
+  maxChars?: number;
+
+  /**
+   * Maximum characters per memory preview.
+   * Default: 200
+   */
+  previewLength?: number;
+}
+
 /**
  * Format context for injection into a session
  */
-export function formatContextForInjection(context: {
-  recentMemories: Memory[];
-  globalProfile: GlobalProfile[];
-  relevantMemories?: SearchResult[];
-}): string {
+export function formatContextForInjection(
+  context: {
+    recentMemories: Memory[];
+    globalProfile: GlobalProfile[];
+    relevantMemories?: SearchResult[];
+  },
+  options: FormatOptions = {}
+): string {
+  const maxChars = options.maxChars ?? 0; // 0 = unlimited
+  const previewLength = options.previewLength ?? 200;
+
   const lines: string[] = ['<memextend-context>', '## Your Memory for This Project', ''];
+  let currentLength = lines.join('\n').length;
+
+  // Footer that will always be added
+  const footer = [
+    'Use these memories naturally. Use `memextend_search` to find more details.',
+    'Use `memextend_save` to remember important decisions for future sessions.',
+    '</memextend-context>'
+  ].join('\n');
+  const footerLength = footer.length + 1; // +1 for newline before footer
+
+  // Helper to check if we can add more content
+  const canAdd = (text: string): boolean => {
+    if (maxChars === 0) return true; // unlimited
+    return currentLength + text.length + footerLength <= maxChars;
+  };
 
   // Recent work section
   if (context.recentMemories.length > 0) {
-    lines.push('### Recent Work');
-    for (const memory of context.recentMemories) {
-      const date = formatRelativeDate(memory.createdAt);
-      const preview = memory.content.split('\n')[0].slice(0, 100);
-      lines.push(`- [${date}] ${preview}`);
+    const sectionHeader = '### Recent Work\n';
+    if (canAdd(sectionHeader)) {
+      lines.push('### Recent Work');
+      currentLength += sectionHeader.length;
+
+      for (const memory of context.recentMemories) {
+        const date = formatRelativeDate(memory.createdAt);
+        const preview = memory.content.split('\n')[0].slice(0, previewLength);
+        const line = `- [${date}] ${preview}\n`;
+
+        if (!canAdd(line)) break; // Stop if we'd exceed limit
+
+        lines.push(`- [${date}] ${preview}`);
+        currentLength += line.length;
+      }
+      lines.push('');
+      currentLength += 1;
     }
-    lines.push('');
   }
 
   // Global preferences section
   if (context.globalProfile.length > 0) {
-    lines.push('### User Preferences (Global)');
-    for (const profile of context.globalProfile) {
-      lines.push(`- ${profile.content}`);
+    const sectionHeader = '### User Preferences (Global)\n';
+    if (canAdd(sectionHeader)) {
+      lines.push('### User Preferences (Global)');
+      currentLength += sectionHeader.length;
+
+      for (const profile of context.globalProfile) {
+        const line = `- ${profile.content}\n`;
+
+        if (!canAdd(line)) break;
+
+        lines.push(`- ${profile.content}`);
+        currentLength += line.length;
+      }
+      lines.push('');
+      currentLength += 1;
     }
-    lines.push('');
   }
 
   // Relevant memories section (if provided)
   if (context.relevantMemories && context.relevantMemories.length > 0) {
-    lines.push('### Relevant Past Work');
-    for (const result of context.relevantMemories) {
-      const preview = result.memory.content.split('\n')[0].slice(0, 80);
-      lines.push(`- ${preview}`);
+    const sectionHeader = '### Relevant Past Work\n';
+    if (canAdd(sectionHeader)) {
+      lines.push('### Relevant Past Work');
+      currentLength += sectionHeader.length;
+
+      for (const result of context.relevantMemories) {
+        const preview = result.memory.content.split('\n')[0].slice(0, previewLength);
+        const line = `- ${preview}\n`;
+
+        if (!canAdd(line)) break;
+
+        lines.push(`- ${preview}`);
+        currentLength += line.length;
+      }
+      lines.push('');
     }
-    lines.push('');
   }
 
   lines.push('Use these memories naturally. Use `memextend_search` to find more details.');

@@ -315,6 +315,30 @@
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-dedup-threshold">Deduplication Threshold</label>
+                    <span class="setting-hint">Similarity threshold for removing duplicate memories (0.0-1.0, higher = stricter)</span>
+                  </div>
+                  <input type="number" id="setting-dedup-threshold" class="setting-input" value="0.85" min="0" max="1" step="0.05">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-session-max-chars">Session Start Max Characters</label>
+                    <span class="setting-hint">Max chars at session start (~4 chars = 1 token, 10000 chars ≈ 2500 tokens)</span>
+                  </div>
+                  <input type="number" id="setting-session-max-chars" class="setting-input" value="10000" min="0" max="50000" step="1000">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-compact-max-chars">Post-Compact Max Characters</label>
+                    <span class="setting-hint">Max chars after compaction - keep small! (2000 chars ≈ 500 tokens)</span>
+                  </div>
+                  <input type="number" id="setting-compact-max-chars" class="setting-input" value="2000" min="0" max="10000" step="500">
+                </div>
               </div>
             </div>
 

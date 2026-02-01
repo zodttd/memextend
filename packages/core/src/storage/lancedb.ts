@@ -89,6 +89,31 @@ export class LanceDBStorage {
     return await this.table.countRows();
   }
 
+  async getVectorsByIds(ids: string[]): Promise<Map<string, number[]>> {
+    const result = new Map<string, number[]>();
+    if (!this.table || ids.length === 0) return result;
+
+    // Build filter for multiple IDs
+    // Sanitize IDs to prevent injection
+    const sanitizedIds = ids.map(id => id.replace(/'/g, "''"));
+    const filter = sanitizedIds.map(id => `id = '${id}'`).join(' OR ');
+
+    try {
+      const rows = await this.table
+        .query()
+        .where(filter)
+        .toArray();
+
+      for (const row of rows as Array<Record<string, unknown>>) {
+        result.set(row.id as string, row.vector as number[]);
+      }
+    } catch {
+      // Return empty map on error
+    }
+
+    return result;
+  }
+
   async close(): Promise<void> {
     // LanceDB doesn't require explicit close
   }
