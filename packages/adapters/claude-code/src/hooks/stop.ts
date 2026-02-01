@@ -210,7 +210,9 @@ async function main(): Promise<void> {
     await saveCaptureState(captureState);
 
     // Deduplicate highly similar memories to save space
-    const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? true;
+    // DISABLED - algorithm compares every memory to every other, even 0.98 deletes 860/871
+    // TODO: Need to fix algorithm - only compare within same session or use content hash
+    const dedupeOnPrune = false; // config.storage?.deduplicateOnPrune
     const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.98;
 
     if (dedupeOnPrune) {

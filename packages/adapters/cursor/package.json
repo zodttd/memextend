@@ -1,6 +1,6 @@
 {
   "name": "@memextend/cursor",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "description": "Cursor IDE adapter for memextend - persistent AI memory via MCP",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "postinstall": "node scripts/postinstall.js || true"
   },
   "dependencies": {
-    "@memextend/core": "^0.3.14",
+    "@memextend/core": "^0.3.15",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {

@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.14"
+VERSION="0.3.15"
 
 # Colors
 RED='\033[0;31m'
@@ -407,7 +407,7 @@ init_data() {
   "storage": {
     "maxMemoriesPerProject": 20000,
     "maxTotalMemories": 0,
-    "deduplicateOnPrune": true
+    "deduplicateOnPrune": false
   },
   "debug": false
 }
