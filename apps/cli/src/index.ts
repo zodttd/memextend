@@ -106,8 +106,16 @@ program
   .action(uninstallCommand);
 
 program
+  .command('optimize')
+  .description('Optimize storage by compacting files and pruning old versions')
+  .action(async () => {
+    const { optimizeCommand } = await import('./commands/optimize.js');
+    await optimizeCommand();
+  });
+
+program
   .command('help [topic]')
-  .description('Show detailed help (topics: status, search, forget, edit, export, import, webui, uninstall)')
+  .description('Show detailed help (topics: status, search, forget, edit, export, import, webui, uninstall, optimize)')
   .action(helpCommand);
 
 program.parse();

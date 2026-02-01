@@ -125,4 +125,24 @@ export class LanceDBStorage {
   async close(): Promise<void> {
     // LanceDB doesn't require explicit close
   }
+
+  /**
+   * Optimize the LanceDB table to reduce storage.
+   * This compacts files, prunes old versions, and optimizes indices.
+   * Should be called periodically (e.g., after many inserts or on cleanup command).
+   */
+  async optimize(): Promise<{ compacted: number; pruned: number } | null> {
+    if (!this.table) return null;
+
+    try {
+      const stats = await this.table.optimize();
+      return {
+        compacted: stats?.compaction?.filesRemoved ?? 0,
+        pruned: stats?.prune?.versionsRemoved ?? 0,
+      };
+    } catch (error) {
+      console.error('[memextend] LanceDB optimize failed:', error);
+      return null;
+    }
+  }
 }
