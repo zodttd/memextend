@@ -31,6 +31,7 @@ export async function webuiCommand(options: WebuiOptions): Promise<void> {
 
   try {
     // Dynamic import of the webui server
+    // Path from apps/cli/dist/commands/webui.js to apps/webui/dist/server.js
     const webuiPath = join(__dirname, '..', '..', '..', 'webui', 'dist', 'server.js');
 
     // Check if webui is built
@@ -41,7 +42,7 @@ export async function webuiCommand(options: WebuiOptions): Promise<void> {
       const { execSync } = await import('child_process');
       try {
         execSync('npm run build', {
-          cwd: join(__dirname, '..', '..', '..', 'webui'),
+          cwd: join(__dirname, '..', '..', 'webui'),
           stdio: 'inherit'
         });
       } catch {
@@ -55,8 +56,9 @@ export async function webuiCommand(options: WebuiOptions): Promise<void> {
     await startServer({ port, host });
 
   } catch (error) {
-    // Fallback: inline simple server implementation
-    console.log(chalk.dim('\n  Using built-in server...\n'));
+    // Log the actual error for debugging
+    console.log(chalk.dim(`\n  WebUI server load failed: ${error instanceof Error ? error.message : error}`));
+    console.log(chalk.dim('  Using built-in server...\n'));
 
     try {
       await startInlineServer(port, host);
