@@ -236,8 +236,9 @@ async function main(): Promise<void> {
     }
 
     // Deduplicate highly similar memories to save space
+    // Deduplicate highly similar memories to save space
     const dedupeOnPrune = config.storage?.deduplicateOnPrune ?? true;
-    const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.85;
+    const dedupeThreshold = config.retrieval?.deduplicationThreshold ?? 0.95;
 
     if (dedupeOnPrune) {
       const dedupedIds = await deduplicateStoredMemories(

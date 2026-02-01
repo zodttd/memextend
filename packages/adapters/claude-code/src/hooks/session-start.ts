@@ -128,7 +128,8 @@ async function main(): Promise<void> {
     ];
 
     // Deduplicate memories (newest wins for similar content)
-    const deduplicationThreshold = config.retrieval?.deduplicationThreshold ?? 0.85;
+    // 0.95 threshold - only remove near-exact duplicates
+    const deduplicationThreshold = config.retrieval?.deduplicationThreshold ?? 0.95;
     let deduplicatedMemories: Memory[] = allMemories;
 
     if (allMemories.length > 1) {
