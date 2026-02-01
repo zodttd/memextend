@@ -13,6 +13,11 @@ const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const CLAUDE_DIR = join(homedir(), '.claude');
 const CLAUDE_SETTINGS_PATH = join(CLAUDE_DIR, 'settings.json');
 const CLAUDE_MD_PATH = join(CLAUDE_DIR, 'CLAUDE.md');
+const SHELL_CONFIGS = [
+  join(homedir(), '.zshrc'),
+  join(homedir(), '.bashrc'),
+  join(homedir(), '.config', 'fish', 'config.fish'),
+];
 
 interface UninstallOptions {
   force?: boolean;
@@ -47,6 +52,7 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
   console.log(chalk.cyan('    - Claude Code hooks (SessionStart, Stop, PreCompact)'));
   console.log(chalk.cyan('    - Claude Code MCP server registration'));
   console.log(chalk.cyan('    - memextend section from ~/.claude/CLAUDE.md'));
+  console.log(chalk.cyan('    - PATH entries from shell config (.zshrc, .bashrc, fish)'));
   if (!options.keepData) {
     console.log(chalk.red('    - All memories and data in ~/.memextend/'));
   } else {
@@ -76,7 +82,16 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
     await cleanupClaudeMd();
     spinner.succeed('Removed memextend section from CLAUDE.md');
 
-    // Step 3: Remove data directory (unless --keep-data)
+    // Step 3: Remove PATH from shell configs
+    spinner.start('Cleaning up shell PATH...');
+    const cleanedShells = await cleanupShellConfigs();
+    if (cleanedShells.length > 0) {
+      spinner.succeed(`Removed PATH from: ${cleanedShells.join(', ')}`);
+    } else {
+      spinner.info('No shell configs needed cleanup');
+    }
+
+    // Step 4: Remove data directory (unless --keep-data)
     if (!options.keepData) {
       spinner.start('Removing memextend data...');
       await rm(MEMEXTEND_DIR, { recursive: true, force: true });
@@ -160,4 +175,44 @@ async function cleanupClaudeMd(): Promise<void> {
   } catch {
     // Ignore errors
   }
+}
+
+async function cleanupShellConfigs(): Promise<string[]> {
+  const cleaned: string[] = [];
+
+  for (const configPath of SHELL_CONFIGS) {
+    if (!existsSync(configPath)) {
+      continue;
+    }
+
+    try {
+      const content = await readFile(configPath, 'utf-8');
+
+      // Check if memextend is in this config
+      if (!content.includes('.memextend')) {
+        continue;
+      }
+
+      // Remove memextend lines (comment and PATH export)
+      const lines = content.split('\n');
+      const filteredLines = lines.filter(line => {
+        // Remove "# Added by memextend installer" comment
+        if (line.includes('Added by memextend installer')) return false;
+        // Remove PATH export with .memextend/bin
+        if (line.includes('.memextend/bin')) return false;
+        return true;
+      });
+
+      // Clean up extra blank lines
+      let newContent = filteredLines.join('\n');
+      newContent = newContent.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+
+      await writeFile(configPath, newContent);
+      cleaned.push(configPath.split('/').pop() || configPath);
+    } catch {
+      // Ignore errors for individual files
+    }
+  }
+
+  return cleaned;
 }
