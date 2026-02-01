@@ -5,7 +5,7 @@ import { existsSync, writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import chalk from 'chalk';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +14,32 @@ const __dirname = dirname(__filename);
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
 const PID_FILE = join(MEMEXTEND_DIR, 'webui.pid');
+
+/**
+ * Check if a PID belongs to a memextend webui process
+ * Returns true only if the process exists AND is running memextend webui
+ */
+function isWebuiProcess(pid: number): boolean {
+  try {
+    // First check if process exists
+    process.kill(pid, 0);
+
+    // Now verify it's actually our webui process by checking command line
+    // Works on macOS and Linux
+    try {
+      const cmd = execSync(`ps -p ${pid} -o command=`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+      // Check if it's a node process running memextend webui
+      return cmd.includes('memextend') && cmd.includes('webui');
+    } catch {
+      // ps command failed - process might not exist or we can't read it
+      // Fall back to just checking if process exists (less safe but functional)
+      return false;
+    }
+  } catch {
+    // Process doesn't exist
+    return false;
+  }
+}
 
 interface WebuiOptions {
   port?: string;
@@ -54,11 +80,9 @@ async function stopWebui(): Promise<void> {
   try {
     const pid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
 
-    // Check if process is running
-    try {
-      process.kill(pid, 0); // Signal 0 just checks if process exists
-    } catch {
-      console.log(chalk.yellow('\n  Web UI process not found (stale PID file). Cleaning up.\n'));
+    // Check if process is actually our webui
+    if (!isWebuiProcess(pid)) {
+      console.log(chalk.yellow('\n  Web UI is not running (stale PID file). Cleaning up.\n'));
       unlinkSync(PID_FILE);
       return;
     }
@@ -81,12 +105,11 @@ async function statusWebui(): Promise<void> {
   try {
     const pid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
 
-    // Check if process is running
-    try {
-      process.kill(pid, 0);
+    // Check if process is actually our webui
+    if (isWebuiProcess(pid)) {
       console.log(chalk.green(`\n  Web UI is running (PID ${pid}).\n`));
-    } catch {
-      console.log(chalk.yellow('\n  Web UI is not running (stale PID file).\n'));
+    } else {
+      console.log(chalk.yellow('\n  Web UI is not running (stale PID file). Cleaning up.\n'));
       unlinkSync(PID_FILE);
     }
   } catch (error) {
@@ -111,16 +134,14 @@ async function startWebui(options: WebuiOptions): Promise<void> {
 
   // Check if already running
   if (existsSync(PID_FILE)) {
-    try {
-      const existingPid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
-      process.kill(existingPid, 0);
+    const existingPid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
+    if (isWebuiProcess(existingPid)) {
       console.log(chalk.yellow(`\n  Web UI is already running (PID ${existingPid}).`));
       console.log(chalk.dim(`  Use 'memextend webui stop' to stop it first.\n`));
       return;
-    } catch {
-      // Process not running, clean up stale PID file
-      unlinkSync(PID_FILE);
     }
+    // Stale PID file (process died or is a different process), clean up
+    unlinkSync(PID_FILE);
   }
 
   // Run in foreground mode (blocking)
