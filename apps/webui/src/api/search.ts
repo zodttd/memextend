@@ -18,10 +18,10 @@ searchRouter.get('/', async (req: Request, res: Response) => {
       return;
     }
 
-    const { SQLiteStorage, LanceDBStorage, MemoryRetriever, createEmbedFunction } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, MemoryRetriever, createEmbedFunction } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await SqliteVecStorage.create(req.app.locals.vectorsPath);
 
     // Create embedding function
     const embedder = await createEmbedFunction(req.app.locals.modelsPath);

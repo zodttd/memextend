@@ -4,6 +4,3 @@
 export { SQLiteStorage } from './sqlite.js';
 export { SqliteVecStorage } from './sqlite-vec.js';
 export type { VectorSearchResult } from './sqlite-vec.js';
-
-// Legacy alias for backwards compatibility
-export { SqliteVecStorage as LanceDBStorage } from './sqlite-vec.js';

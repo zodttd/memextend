@@ -32,10 +32,10 @@ function getDirSize(dir: string): number {
 // GET /api/stats - Get memory statistics
 statsRouter.get('/', async (req: Request, res: Response) => {
   try {
-    const { SQLiteStorage, LanceDBStorage, isModelAvailable } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, isModelAvailable } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await SqliteVecStorage.create(req.app.locals.vectorsPath);
 
     // Get counts
     const memoryCount = sqlite.getMemoryCount();

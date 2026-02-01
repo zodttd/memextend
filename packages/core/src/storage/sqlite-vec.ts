@@ -19,7 +19,7 @@ export class SqliteVecStorage {
   }
 
   static async create(dbPath: string): Promise<SqliteVecStorage> {
-    // Handle both directory paths (legacy LanceDB format) and file paths
+    // Handle both directory paths (legacy directory format) and file paths
     // If path ends with 'vectors' (directory), convert to vectors.db file
     let actualPath = dbPath;
     if (dbPath.endsWith('vectors') || dbPath.endsWith('vectors/')) {

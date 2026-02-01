@@ -14,7 +14,7 @@ import { execSync } from 'child_process';
 
 import {
   SQLiteStorage,
-  LanceDBStorage,
+  SqliteVecStorage,
   TranscriptParser,
   formatCaptureContent,
   isTextCapture,
@@ -163,7 +163,7 @@ async function main(): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
 
     // Ensure project is registered
     const project = sqlite.getProject(projectId);
@@ -333,7 +333,7 @@ function outputResult(result: HookOutput): void {
  */
 async function deduplicateStoredMemories(
   sqlite: SQLiteStorage,
-  vectorStore: LanceDBStorage,
+  vectorStore: SqliteVecStorage,
   projectId: string,
   threshold: number
 ): Promise<string[]> {

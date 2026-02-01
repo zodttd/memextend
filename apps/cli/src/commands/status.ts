@@ -35,10 +35,10 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
   }
 
   try {
-    const { SQLiteStorage, LanceDBStorage, getProjectId } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, getProjectId } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
 
     // Get counts
     const memoryCount = sqlite.getMemoryCount();

@@ -6,7 +6,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { LanceDBStorage } from '@memextend/core';
+import { SqliteVecStorage } from '@memextend/core';
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const VECTORS_PATH = join(MEMEXTEND_DIR, 'vectors');
@@ -50,10 +50,10 @@ export async function optimizeCommand(): Promise<void> {
   const sizeBefore = getDirectorySize(VECTORS_PATH);
   console.log(`Vector storage before: ${chalk.yellow(formatBytes(sizeBefore))}`);
 
-  const spinner = ora('Optimizing LanceDB storage...').start();
+  const spinner = ora('Optimizing vector storage...').start();
 
   try {
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
     const stats = await vectorStore.optimize();
 
     spinner.stop();

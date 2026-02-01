@@ -40,9 +40,9 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
   }
 
   try {
-    const { SQLiteStorage, LanceDBStorage, getCurrentProjectId } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, getCurrentProjectId } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
 
     // Clear global profile: --clear-global
     if (options.clearGlobal) {

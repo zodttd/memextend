@@ -473,7 +473,7 @@ Everything stays on your machine:
 
 ## Roadmap
 
-- [x] Core storage (SQLite + LanceDB)
+- [x] Core storage (SQLite + sqlite-vec)
 - [x] Local embeddings (nomic-embed-text)
 - [x] Memory capture and retrieval
 - [x] Claude Code adapter (hooks + MCP)

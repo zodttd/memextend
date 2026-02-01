@@ -10,7 +10,7 @@ import { execSync } from 'child_process';
 
 import {
   SQLiteStorage,
-  LanceDBStorage,
+  SqliteVecStorage,
   MemoryRetriever,
   formatContextForInjection,
   createEmbedFunction,
@@ -76,7 +76,7 @@ async function main(): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
 
     // Create embedding function (uses real model if available, fallback otherwise)
     const embedder = await createEmbedFunction(MODELS_PATH);

@@ -25,7 +25,7 @@ export async function saveCommand(options: SaveOptions): Promise<void> {
   }
 
   try {
-    const { SQLiteStorage, LanceDBStorage, LocalEmbedding, getCurrentProjectId } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, LocalEmbedding, getCurrentProjectId } = await import('@memextend/core');
 
     let content = options.message;
 
@@ -79,7 +79,7 @@ export async function saveCommand(options: SaveOptions): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await SqliteVecStorage.create(VECTORS_PATH);
     const embedder = await LocalEmbedding.create(MEMEXTEND_DIR);
 
     // Create memory

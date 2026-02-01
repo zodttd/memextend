@@ -8,9 +8,9 @@ export const memoriesRouter = Router();
 
 // Helper to get storage instances
 async function getStorage(req: Request) {
-  const { SQLiteStorage, LanceDBStorage } = await import('@memextend/core');
+  const { SQLiteStorage, SqliteVecStorage } = await import('@memextend/core');
   const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-  const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
+  const vectorStore = await SqliteVecStorage.create(req.app.locals.vectorsPath);
   return { sqlite, vectorStore };
 }
 
@@ -84,11 +84,11 @@ memoriesRouter.post('/', async (req: Request, res: Response) => {
       return;
     }
 
-    const { SQLiteStorage, LanceDBStorage, LocalEmbedding } = await import('@memextend/core');
+    const { SQLiteStorage, SqliteVecStorage, LocalEmbedding } = await import('@memextend/core');
     const { randomUUID } = await import('crypto');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await SqliteVecStorage.create(req.app.locals.vectorsPath);
     const embedder = await LocalEmbedding.create(req.app.locals.memextendDir);
 
     const memoryId = randomUUID();
