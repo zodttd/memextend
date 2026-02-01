@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.8"
+VERSION="0.3.9"
 
 # Colors
 RED='\033[0;31m'
@@ -305,10 +305,31 @@ select_adapters() {
     done
 }
 
+# Stop webui if running
+stop_webui() {
+    if [ -f "$DATA_DIR/webui.pid" ]; then
+        PID=$(cat "$DATA_DIR/webui.pid" 2>/dev/null)
+        if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+            info "Stopping webui..."
+            kill "$PID" 2>/dev/null
+            sleep 1
+            # Force kill if still running
+            if kill -0 "$PID" 2>/dev/null; then
+                kill -9 "$PID" 2>/dev/null
+            fi
+            success "Webui stopped"
+        fi
+        rm -f "$DATA_DIR/webui.pid"
+    fi
+}
+
 # Clone or update repository
 install_memextend() {
     echo ""
     info "Installing memextend..."
+
+    # Stop webui before updating files
+    stop_webui
 
     if [ -d "$INSTALL_DIR/repo" ]; then
         info "Updating existing installation..."
