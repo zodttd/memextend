@@ -88,6 +88,12 @@ export class SQLiteVecStorage {
       throw new Error(`Query vector must have ${this.dimensions} dimensions, got ${vector.length}`);
     }
 
+    // Check if table is empty - vec0 KNN queries fail on empty tables
+    const count = await this.getVectorCount();
+    if (count === 0) {
+      return [];
+    }
+
     const effectiveLimit = limit > 0 ? limit : 100;
     const float32 = new Float32Array(vector);
     const vectorBuffer = Buffer.from(float32.buffer);
