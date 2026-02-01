@@ -10,6 +10,9 @@ export class SQLiteStorage {
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
     this.db.pragma('journal_mode = WAL');
+    // Set busy timeout to wait for locks instead of failing immediately
+    // Critical for multiple MCP processes accessing the same DB
+    this.db.pragma('busy_timeout = 5000');
     this.initialize();
   }
 
@@ -448,6 +451,13 @@ export class SQLiteStorage {
   }
 
   close(): void {
+    // Force WAL checkpoint before closing to ensure all data is written to main DB
+    // This prevents data loss when multiple processes access the same DB
+    try {
+      this.db.pragma('wal_checkpoint(TRUNCATE)');
+    } catch {
+      // Ignore checkpoint errors on close
+    }
     this.db.close();
   }
 }

@@ -31,6 +31,10 @@ export class SQLiteVecStorage {
     // Load sqlite-vec extension
     sqliteVec.load(db);
 
+    // Enable WAL mode and set busy timeout for concurrent access
+    db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 5000');
+
     const storage = new SQLiteVecStorage(db);
     storage.initialize();
     return storage;
@@ -159,6 +163,13 @@ export class SQLiteVecStorage {
   }
 
   async close(): Promise<void> {
+    // Force WAL checkpoint before closing to ensure all data is written to main DB
+    // This prevents data loss when multiple processes access the same DB
+    try {
+      this.db.pragma('wal_checkpoint(TRUNCATE)');
+    } catch {
+      // Ignore checkpoint errors on close
+    }
     this.db.close();
   }
 
