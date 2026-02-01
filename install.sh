@@ -1041,7 +1041,7 @@ print_complete() {
     echo "    memextend forget --all       Delete ALL memories (with confirmation)"
     echo "    memextend forget --all -p    Delete current project memories only"
     echo "    memextend forget --before <date>   Delete memories before date"
-    echo "    memextend forget --delete-project <name>  Delete entire project"
+    echo "    memextend forget --delete-project <name>  Delete all memories in a project"
     echo "    memextend forget --clear-global    Clear all global profile entries"
     echo ""
     echo -e "  ${CYAN}Import/Export:${NC}"

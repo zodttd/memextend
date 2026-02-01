@@ -57,7 +57,7 @@ program
   .option('-a, --all', 'Delete ALL memories (use with caution)')
   .option('-p, --project', 'Only affect current project')
   .option('--before <date>', 'Delete memories before date (YYYY-MM-DD)')
-  .option('--delete-project <name>', 'Delete a project and all its memories')
+  .option('--delete-project <name>', 'Delete all memories in a project')
   .option('--clear-global', 'Clear all global profile entries')
   .action(forgetCommand);
 

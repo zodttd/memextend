@@ -95,7 +95,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       }
 
       const memoryCount = sqlite.getMemoryCountByProject(project.id);
-      console.log(chalk.red(`\n  ⚠ This will delete project "${project.name}" and ${memoryCount} memories!`));
+      console.log(chalk.red(`\n  ⚠ This will delete all ${memoryCount} memories from project "${project.name}"!`));
       const confirmed = await confirm(chalk.yellow('  Are you sure?'));
 
       if (!confirmed) {
@@ -125,7 +125,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
 
       sqlite.close();
       await lancedb.close();
-      console.log(chalk.green(`\n  ✓ Deleted project "${project.name}" with ${result.memoriesDeleted} memories.\n`));
+      console.log(chalk.green(`\n  ✓ Deleted ${result.memoriesDeleted} memories from project "${project.name}".\n`));
       return;
     }
 
@@ -194,7 +194,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       console.log(chalk.dim('    memextend forget --all                 Delete ALL memories'));
       console.log(chalk.dim('    memextend forget --all --project       Delete all memories in current project'));
       console.log(chalk.dim('    memextend forget --before 2025-01-01   Delete memories before date'));
-      console.log(chalk.dim('    memextend forget --delete-project <name>  Delete a project and all its memories'));
+      console.log(chalk.dim('    memextend forget --delete-project <name>  Delete all memories in a project'));
       console.log(chalk.dim('    memextend forget --clear-global        Clear all global profile entries\n'));
       sqlite.close();
       await lancedb.close();

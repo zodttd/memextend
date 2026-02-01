@@ -91,7 +91,7 @@
               <select id="filter-project" class="filter-select">
                 <option value="">All Projects</option>
               </select>
-              <button id="delete-project-btn" class="btn btn-danger btn-small" style="display: none;" title="Delete selected project">Delete Project</button>
+              <button id="delete-project-btn" class="btn btn-danger btn-small" style="display: none;" title="Delete all memories in selected project">Delete Project Memories</button>
             </div>
             <select id="filter-type" class="filter-select">
               <option value="">All Types</option>
@@ -506,19 +506,19 @@
       </div>
     </div>
 
-    <!-- Delete Project Confirmation Modal -->
+    <!-- Delete Project Memories Confirmation Modal -->
     <div id="delete-project-modal" class="modal">
       <div class="modal-content modal-small">
         <div class="modal-header">
-          <h3>Delete Project</h3>
+          <h3>Delete All Project Memories</h3>
           <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to delete project "<strong id="delete-project-name"></strong>"?</p>
+          <p>Are you sure you want to delete all memories from project "<strong id="delete-project-name"></strong>"?</p>
           <p class="warning-text">This will permanently delete <strong id="delete-project-count"></strong> memories and cannot be undone.</p>
         </div>
         <div class="modal-footer">
-          <button id="confirm-delete-project" class="btn btn-danger">Delete Project</button>
+          <button id="confirm-delete-project" class="btn btn-danger">Delete All Memories</button>
           <button id="cancel-delete-project" class="btn btn-secondary">Cancel</button>
         </div>
       </div>
