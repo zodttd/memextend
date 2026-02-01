@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.16"
+VERSION="0.3.17"
 
 # Colors
 RED='\033[0;31m'
@@ -387,7 +387,7 @@ init_data() {
 
     mkdir -p "$DATA_DIR/models"
 
-    # Create default config if not exists
+    # Create or update config with required sections
     if [ ! -f "$DATA_DIR/config.json" ]; then
         cat > "$DATA_DIR/config.json" << 'EOF'
 {
@@ -420,6 +420,24 @@ init_data() {
   "debug": false
 }
 EOF
+    else
+        # Ensure storage section exists in existing config
+        if ! grep -q '"storage"' "$DATA_DIR/config.json"; then
+            info "Adding missing storage section to config..."
+            node -e "
+                const fs = require('fs');
+                const config = JSON.parse(fs.readFileSync('$DATA_DIR/config.json', 'utf8'));
+                if (!config.storage) {
+                    config.storage = {
+                        maxMemoriesPerProject: 20000,
+                        maxTotalMemories: 0,
+                        deduplicateOnPrune: false
+                    };
+                    fs.writeFileSync('$DATA_DIR/config.json', JSON.stringify(config, null, 2));
+                    console.log('Storage section added to config');
+                }
+            " 2>/dev/null || warn "Could not update config - please add storage section manually"
+        fi
     fi
 
     # Initialize SQLite databases (main + vectors using sqlite-vec)
