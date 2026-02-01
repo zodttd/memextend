@@ -1,3 +1,4 @@
+[//]: # (memextend-start)
 # memextend - AI Memory Extension
 
 You have persistent memory across sessions via memextend.
@@ -44,3 +45,4 @@ You have persistent memory across sessions via memextend.
 - The user shares important preferences
 - Completing a major feature or fix
 - Finding a solution to a tricky bug (save what worked!)
+[//]: # (memextend-end)

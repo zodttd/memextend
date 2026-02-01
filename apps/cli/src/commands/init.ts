@@ -18,7 +18,12 @@ const CLAUDE_DIR = join(homedir(), '.claude');
 const CLAUDE_SETTINGS_PATH = join(CLAUDE_DIR, 'settings.json');
 const CLAUDE_MD_PATH = join(CLAUDE_DIR, 'CLAUDE.md');
 
-const CLAUDE_MD_TEMPLATE = `# memextend - AI Memory Extension
+// Markers for detecting and replacing memextend section (invisible markdown comments)
+const MEMEXTEND_START_MARKER = '[//]: # (memextend-start)';
+const MEMEXTEND_END_MARKER = '[//]: # (memextend-end)';
+
+const CLAUDE_MD_TEMPLATE = `${MEMEXTEND_START_MARKER}
+# memextend - AI Memory Extension
 
 You have persistent memory across sessions via memextend.
 
@@ -69,7 +74,7 @@ You have persistent memory across sessions via memextend.
 
 Memories are automatically captured from your sessions and injected at startup.
 Use the tools above to actively search for more detail or save important context.
-`;
+${MEMEXTEND_END_MARKER}`;
 
 
 const DEFAULT_CONFIG = {
@@ -254,11 +259,24 @@ async function createClaudeMd(): Promise<boolean> {
 
     // Check if CLAUDE.md already exists
     if (existsSync(CLAUDE_MD_PATH)) {
-      // Check if it already contains memextend section
       const existing = await readFile(CLAUDE_MD_PATH, 'utf-8');
-      if (existing.includes('memextend')) {
-        return false; // Already has memextend content
+
+      // Check if memextend markers exist - if so, replace the section
+      if (existing.includes(MEMEXTEND_START_MARKER) && existing.includes(MEMEXTEND_END_MARKER)) {
+        // Replace existing memextend section
+        const startIdx = existing.indexOf(MEMEXTEND_START_MARKER);
+        const endIdx = existing.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
+        const before = existing.substring(0, startIdx);
+        const after = existing.substring(endIdx);
+        await writeFile(CLAUDE_MD_PATH, before + CLAUDE_MD_TEMPLATE + after);
+        return true; // Updated existing section
       }
+
+      // Legacy check - if it has memextend content but no markers, skip
+      if (existing.includes('memextend')) {
+        return false; // Already has memextend content (legacy format)
+      }
+
       // Append to existing file
       await writeFile(CLAUDE_MD_PATH, existing + '\n\n' + CLAUDE_MD_TEMPLATE);
     } else {

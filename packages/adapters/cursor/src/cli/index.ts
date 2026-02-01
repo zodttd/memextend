@@ -16,7 +16,7 @@
  *   status     - Check memextend status
  */
 
-import { existsSync, copyFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join, dirname, resolve } from 'path';
 import { homedir } from 'os';
@@ -24,6 +24,10 @@ import { spawn } from 'child_process';
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
+
+// Markers for detecting and replacing memextend section (invisible markdown comments)
+const MEMEXTEND_START_MARKER = '[//]: # (memextend-start)';
+const MEMEXTEND_END_MARKER = '[//]: # (memextend-end)';
 
 // Cursor MCP config locations
 const CURSOR_CONFIG_PATHS = [
@@ -141,10 +145,19 @@ async function setupCursor(): Promise<void> {
         await writeFile(cursorrulesTarget, sourceContent);
         console.log('Agent instructions copied to .cursorrules in current directory.\n');
       } else {
-        // Check if memextend section already exists
         const existingContent = await readFile(cursorrulesTarget, 'utf-8');
-        if (existingContent.includes('memextend')) {
-          console.log('Note: .cursorrules already contains memextend instructions.\n');
+
+        // Check if memextend markers exist - if so, replace the section
+        if (existingContent.includes(MEMEXTEND_START_MARKER) && existingContent.includes(MEMEXTEND_END_MARKER)) {
+          const startIdx = existingContent.indexOf(MEMEXTEND_START_MARKER);
+          const endIdx = existingContent.indexOf(MEMEXTEND_END_MARKER) + MEMEXTEND_END_MARKER.length;
+          const before = existingContent.substring(0, startIdx);
+          const after = existingContent.substring(endIdx);
+          await writeFile(cursorrulesTarget, before + sourceContent + after);
+          console.log('Agent instructions updated in .cursorrules.\n');
+        } else if (existingContent.includes('memextend')) {
+          // Legacy format without markers - don't modify
+          console.log('Note: .cursorrules already contains memextend instructions (legacy format).\n');
         } else {
           // Append to existing file
           await writeFile(cursorrulesTarget, existingContent + '\n\n' + sourceContent);
