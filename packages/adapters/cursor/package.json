@@ -2,7 +2,7 @@
   "name": "@memextend/cursor",
   "version": "0.1.0",
   "description": "Cursor IDE adapter for memextend - persistent AI memory via MCP",
-  "author": "ZodTTD LLC <info@zodttd.com>",
+  "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

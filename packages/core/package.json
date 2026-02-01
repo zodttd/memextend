@@ -2,7 +2,7 @@
   "name": "@memextend/core",
   "version": "0.1.0",
   "description": "Core memory storage and retrieval for memextend - local AI memory extension",
-  "author": "ZodTTD LLC <info@zodttd.com>",
+  "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

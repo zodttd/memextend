@@ -2,7 +2,7 @@
   "name": "@memextend/webui",
   "version": "0.1.0",
   "description": "Web UI for memextend - view and manage your AI memory",
-  "author": "ZodTTD LLC <info@zodttd.com>",
+  "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
   "type": "module",
   "main": "dist/server.js",
