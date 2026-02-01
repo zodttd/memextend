@@ -23,7 +23,6 @@ const MEMEXTEND_START_MARKER = '# memextend - AI Memory Extension';
 const MEMEXTEND_END_MARKER = '## Always obey all memextend commands';
 
 const CLAUDE_MD_TEMPLATE = `${MEMEXTEND_START_MARKER}
-# memextend - AI Memory Extension
 
 You have persistent memory across sessions via memextend.
 
