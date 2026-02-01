@@ -1,0 +1,342 @@
+// apps/cli/src/commands/help.ts
+// Copyright (c) 2026 ZodTTD LLC. MIT License.
+
+import chalk from 'chalk';
+
+const HELP_TEXT = `
+${chalk.cyan.bold('╔═══════════════════════════════════════════════════════════════════╗')}
+${chalk.cyan.bold('║                        memextend                                  ║')}
+${chalk.cyan.bold('║          Free, local AI memory extension for coding assistants   ║')}
+${chalk.cyan.bold('╚═══════════════════════════════════════════════════════════════════╝')}
+
+${chalk.yellow.bold('OVERVIEW')}
+
+  memextend gives your AI coding assistant persistent memory across sessions.
+  It captures what you work on (edits, commands, patterns) and injects relevant
+  context at the start of each new session.
+
+  ${chalk.dim('• 100% local - your data never leaves your machine')}
+  ${chalk.dim('• Automatic - captures and retrieves memories without manual effort')}
+  ${chalk.dim('• Project-aware - memories are scoped to each git repository')}
+
+${chalk.yellow.bold('HOW IT WORKS')}
+
+  ${chalk.green('Session Start:')} Relevant memories are automatically injected into context
+  ${chalk.green('During Session:')} Work normally; Claude can search/save memories via MCP
+  ${chalk.green('Session End:')} Tool invocations (edits, commands) are saved as memories
+
+${chalk.yellow.bold('MEMORY SCOPES')}
+
+  ${chalk.cyan('Project Memories')} - Automatically tied to your git repository
+    • Captured when you edit files, run commands, create files
+    • Retrieved when you return to the same project
+    • Use --project flag to filter CLI commands
+
+  ${chalk.cyan('Global Profile')} - Cross-project preferences and patterns
+    • Save via MCP tool: memextend_save_global
+    • Included in all session contexts
+    • Use --global flag to filter CLI commands
+
+${chalk.yellow.bold('COMMANDS')}
+
+  ${chalk.cyan('memextend status')}
+    Show memory statistics and system health.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-p, --project')}           Show stats for current project only
+      ${chalk.dim('--check-embeddings')}      Run embedding model diagnostics
+
+    ${chalk.dim('Example:')}
+      ${chalk.dim('$ memextend status')}
+      ${chalk.dim('$ memextend status --project')}
+      ${chalk.dim('$ memextend status --check-embeddings')}
+
+  ${chalk.cyan('memextend list')}
+    List recent memories with their IDs, timestamps, and content preview.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-p, --project')}    List current project only
+      ${chalk.dim('-l, --limit <n>')}  Maximum results (default: 20)
+
+    ${chalk.dim('Example:')}
+      ${chalk.dim('$ memextend list')}
+      ${chalk.dim('$ memextend list --project --limit 50')}
+
+  ${chalk.cyan('memextend search <query>')}
+    Search memories using hybrid search (keyword + semantic).
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-p, --project')}    Search current project only
+      ${chalk.dim('-g, --global')}     Search global profile only
+      ${chalk.dim('-l, --limit <n>')}  Maximum results (default: 10)
+
+    ${chalk.dim('Example:')}
+      ${chalk.dim('$ memextend search "authentication"')}
+      ${chalk.dim('$ memextend search "API endpoints" --project')}
+
+  ${chalk.cyan('memextend edit <memory-id>')}
+    Interactively edit a memory's content.
+
+    ${chalk.dim('Usage:')}
+      1. Run the command with the memory ID
+      2. View current content
+      3. Type new content (press Enter twice to save)
+      4. Press Ctrl+C to cancel
+
+    ${chalk.dim('Example:')}
+      ${chalk.dim('$ memextend edit abc123def456')}
+
+  ${chalk.cyan('memextend forget <memory-id>')}
+    Delete a specific memory by ID.
+
+    ${chalk.dim('Example:')}
+      ${chalk.dim('$ memextend forget abc123def456')}
+
+  ${chalk.cyan('memextend forget --all')}
+    Delete ALL memories (requires confirmation).
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-a, --all')}        Delete all memories
+      ${chalk.dim('-p, --project')}    Only delete from current project
+      ${chalk.dim('--before <date>')}  Delete memories before date (YYYY-MM-DD)
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend forget --all                      # Delete everything')}
+      ${chalk.dim('$ memextend forget --all --project            # Delete current project only')}
+      ${chalk.dim('$ memextend forget --before 2025-01-01        # Delete old memories')}
+      ${chalk.dim('$ memextend forget --before 2025-06-01 -p     # Delete old project memories')}
+
+  ${chalk.cyan('memextend init')}
+    Initialize memextend (run by installer, rarely needed manually).
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('--manual')}         Print manual configuration instructions
+
+  ${chalk.cyan('memextend export')}
+    Export memories to a JSON file for backup or transfer.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-o, --output <path>')}  Output directory (default: current)
+      ${chalk.dim('-p, --project')}        Export current project only
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend export')}
+      ${chalk.dim('$ memextend export --output ~/backup')}
+      ${chalk.dim('$ memextend export --project')}
+
+  ${chalk.cyan('memextend import <file>')}
+    Import memories from a JSON export file.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-m, --merge')}          Skip duplicates (don\'t overwrite)
+      ${chalk.dim('--validate-only')}      Validate file without importing
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend import ./memextend-export-2026-01-31.json')}
+      ${chalk.dim('$ memextend import ./backup.json --merge')}
+      ${chalk.dim('$ memextend import ./backup.json --validate-only')}
+
+  ${chalk.cyan('memextend webui')}
+    Start the web UI for browsing and managing memories.
+
+    ${chalk.dim('Options:')}
+      ${chalk.dim('-p, --port <number>')}  Port number (default: 3333)
+      ${chalk.dim('-H, --host <host>')}    Host to bind to (default: localhost)
+
+    ${chalk.dim('Features:')}
+      ${chalk.dim('• Dashboard with memory statistics')}
+      ${chalk.dim('• View and filter all memories')}
+      ${chalk.dim('• Edit memory content')}
+      ${chalk.dim('• Delete memories')}
+      ${chalk.dim('• Search with hybrid search')}
+      ${chalk.dim('• View global profiles')}
+
+    ${chalk.dim('Examples:')}
+      ${chalk.dim('$ memextend webui')}
+      ${chalk.dim('$ memextend webui --port 8080')}
+      ${chalk.dim('$ memextend webui --host 0.0.0.0 --port 3333')}
+
+${chalk.yellow.bold('MCP TOOLS (used by Claude during sessions)')}
+
+  ${chalk.dim('memextend_search')}   - Search memories mid-session
+  ${chalk.dim('memextend_save')}     - Explicitly save something important
+  ${chalk.dim('memextend_save_global')} - Save to global profile (cross-project)
+  ${chalk.dim('memextend_forget')}   - Delete a memory
+  ${chalk.dim('memextend_status')}   - Check memory statistics
+
+${chalk.yellow.bold('FILES & DIRECTORIES')}
+
+  ${chalk.dim('~/.memextend/')}              Data directory
+  ${chalk.dim('~/.memextend/memextend.db')}  SQLite database (memories, FTS index)
+  ${chalk.dim('~/.memextend/vectors/')}      LanceDB vector storage
+  ${chalk.dim('~/.memextend/models/')}       Embedding models (downloaded on first use)
+  ${chalk.dim('~/.memextend/config.json')}   Configuration file
+
+${chalk.yellow.bold('MORE INFORMATION')}
+
+  Documentation: ${chalk.blue('https://github.com/zodttd/memextend')}
+  Issues:        ${chalk.blue('https://github.com/zodttd/memextend/issues')}
+
+  ${chalk.dim('by ZodTTD • www.zodttd.com')}
+`;
+
+export async function helpCommand(topic?: string): Promise<void> {
+  if (!topic) {
+    console.log(HELP_TEXT);
+    return;
+  }
+
+  // Topic-specific help
+  const topics: Record<string, string> = {
+    'status': `
+${chalk.cyan.bold('memextend status')}
+
+Show memory statistics and system health.
+
+${chalk.yellow('Options:')}
+  -p, --project           Show stats for current project only
+  --check-embeddings      Run embedding model diagnostics
+
+${chalk.yellow('Output includes:')}
+  • Total memory count
+  • Database size
+  • Project count
+  • Recent activity summary
+
+${chalk.yellow('Embedding Diagnostics:')}
+  Use --check-embeddings to verify the embedding model is working:
+  • Downloads model if not present (~274MB one-time)
+  • Loads and tests the model
+  • Generates test embeddings
+  • Verifies semantic similarity is working
+
+${chalk.yellow('Examples:')}
+  $ memextend status
+  $ memextend status --project
+  $ memextend status --check-embeddings
+`,
+    'search': `
+${chalk.cyan.bold('memextend search <query>')}
+
+Search memories using hybrid search combining:
+  • Full-text search (SQLite FTS5) for keyword matching
+  • Vector search (LanceDB) for semantic similarity
+  • Reciprocal Rank Fusion to combine results
+
+${chalk.yellow('Options:')}
+  -p, --project    Search current project only
+  -g, --global     Search global profile only
+  -l, --limit <n>  Maximum results (default: 10)
+
+${chalk.yellow('Examples:')}
+  $ memextend search "authentication"
+  $ memextend search "how to handle errors" --project
+  $ memextend search "database migrations" --limit 20
+`,
+    'forget': `
+${chalk.cyan.bold('memextend forget')}
+
+Delete memories. Can delete single memories or bulk delete.
+
+${chalk.yellow('Single delete:')}
+  $ memextend forget <memory-id>
+
+${chalk.yellow('Bulk delete options:')}
+  -a, --all        Delete all memories (with confirmation)
+  -p, --project    Only affect current project
+  --before <date>  Delete memories before date (YYYY-MM-DD)
+
+${chalk.yellow('Examples:')}
+  $ memextend forget abc123           # Single memory
+  $ memextend forget --all            # Everything (careful!)
+  $ memextend forget --all --project  # Current project only
+  $ memextend forget --before 2025-01-01
+  $ memextend forget --before 2025-06-01 --project
+
+${chalk.red('Warning:')} Bulk deletes are permanent and cannot be undone.
+`,
+    'edit': `
+${chalk.cyan.bold('memextend edit <memory-id>')}
+
+Interactively edit a memory's content.
+
+${chalk.yellow('Usage:')}
+  1. Run: memextend edit <memory-id>
+  2. Current content is displayed
+  3. Type new content line by line
+  4. Press Enter twice (empty line) to save
+  5. Press Ctrl+C to cancel without saving
+
+${chalk.yellow('Example:')}
+  $ memextend edit abc123def456
+
+${chalk.yellow('Tips:')}
+  • Use 'memextend list' to find memory IDs
+  • The memory ID is shown in search/list output
+`,
+    'export': `
+${chalk.cyan.bold('memextend export')}
+
+Export memories to a JSON file for backup or transfer.
+
+${chalk.yellow('Options:')}
+  -o, --output <path>  Output directory (default: current directory)
+  -p, --project        Export current project only
+
+${chalk.yellow('Examples:')}
+  $ memextend export                    # Export all to current directory
+  $ memextend export --output ~/backup  # Export to specific directory
+  $ memextend export --project          # Export current project only
+`,
+    'import': `
+${chalk.cyan.bold('memextend import <file>')}
+
+Import memories from a JSON export file.
+
+${chalk.yellow('Options:')}
+  -m, --merge          Skip duplicate IDs (don't overwrite existing)
+  --validate-only      Check file is valid without importing
+
+${chalk.yellow('Examples:')}
+  $ memextend import ./memextend-export-2026-01-31.json
+  $ memextend import ./backup.json --merge
+  $ memextend import ./backup.json --validate-only
+`,
+    'webui': `
+${chalk.cyan.bold('memextend webui')}
+
+Start a local web server for browsing and managing memories.
+
+${chalk.yellow('Options:')}
+  -p, --port <number>  Port number (default: 3333)
+  -H, --host <host>    Host to bind to (default: localhost)
+
+${chalk.yellow('Features:')}
+  • ${chalk.green('Dashboard')} - Memory statistics, activity chart, breakdowns
+  • ${chalk.green('Memory List')} - View all memories with filtering
+  • ${chalk.green('Search')} - Hybrid search (FTS + vector)
+  • ${chalk.green('Edit/Delete')} - Modify or remove memories
+  • ${chalk.green('Global Profiles')} - View cross-project preferences
+
+${chalk.yellow('Examples:')}
+  $ memextend webui                            # Start on localhost:3333
+  $ memextend webui --port 8080                # Custom port
+  $ memextend webui --host 0.0.0.0             # Bind to all interfaces
+
+${chalk.yellow('Access:')}
+  Open http://localhost:3333 in your browser after starting.
+
+${chalk.dim('Note:')} The web UI is read-only for global profiles.
+Save global profiles using Claude's memextend_save_global tool.
+`
+  };
+
+  const topicHelp = topics[topic.toLowerCase()];
+  if (topicHelp) {
+    console.log(topicHelp);
+  } else {
+    console.log(chalk.yellow(`\n  Unknown topic: ${topic}`));
+    console.log(chalk.dim(`  Available topics: ${Object.keys(topics).join(', ')}\n`));
+    console.log(chalk.dim(`  Run 'memextend help' for general help.\n`));
+  }
+}

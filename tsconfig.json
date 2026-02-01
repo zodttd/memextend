@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/adapters/claude-code" },
+    { "path": "packages/adapters/opencode" },
+    { "path": "packages/adapters/cursor" },
+    { "path": "apps/cli" },
+    { "path": "apps/webui" }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "memextend": {
+      "type": "local",
+      "command": ["npx", "-y", "@memextend/opencode", "dist/mcp/server.cjs"],
+      "enabled": true
+    }
+  },
+  "agent": {
+    "build": {
+      "prompt": "You have access to memextend memory tools. Use memextend_context at the start of sessions to recall relevant past work. Use memextend_save to remember important decisions."
+    }
+  }
+}

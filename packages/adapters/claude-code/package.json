@@ -1,0 +1,19 @@
+{
+  "name": "@memextend/claude-code",
+  "version": "0.1.0",
+  "description": "Claude Code adapter for memextend",
+  "author": "ZodTTD LLC",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && npm run build:hooks",
+    "build:hooks": "node scripts/build-hooks.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@memextend/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

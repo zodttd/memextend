@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/hooks.schema.json",
+  "hooks": {
+    "SessionStart": {
+      "command": "node",
+      "args": ["${PLUGIN_DIR}/dist/hooks/session-start.cjs"],
+      "timeout": 30000
+    },
+    "Stop": {
+      "command": "node",
+      "args": ["${PLUGIN_DIR}/dist/hooks/stop.cjs"],
+      "timeout": 30000
+    }
+  }
+}

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>memextend - Web UI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        <h1>memextend</h1>
+        <span class="header-tagline">AI Memory Extension</span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="memories">Memories</button>
+        <button class="nav-btn" data-view="search">Search</button>
+        <button class="nav-btn" data-view="global">Global Profile</button>
+        <button class="nav-btn" data-view="settings">Settings</button>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <section id="view-dashboard" class="view active">
+        <div class="dashboard-grid">
+          <!-- Stats Cards -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-memories">-</div>
+              <div class="stat-label">Total Memories</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-vectors">-</div>
+              <div class="stat-label">Vector Embeddings</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-projects">-</div>
+              <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-storage">-</div>
+              <div class="stat-label">Storage Used</div>
+            </div>
+          </div>
+
+          <!-- Activity Chart -->
+          <div class="card activity-card">
+            <h3>Activity (Last 30 Days)</h3>
+            <div id="activity-chart" class="activity-chart"></div>
+          </div>
+
+          <!-- Breakdowns -->
+          <div class="card">
+            <h3>By Type</h3>
+            <div id="type-breakdown" class="breakdown-list"></div>
+          </div>
+
+          <div class="card">
+            <h3>By Source Tool</h3>
+            <div id="source-breakdown" class="breakdown-list"></div>
+          </div>
+
+          <!-- Recent Memories -->
+          <div class="card full-width">
+            <h3>Recent Memories</h3>
+            <div id="recent-memories" class="memory-list"></div>
+          </div>
+
+          <!-- Embedding Model Status -->
+          <div class="card">
+            <h3>Embedding Model</h3>
+            <div id="model-status" class="model-status"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Memories View -->
+      <section id="view-memories" class="view">
+        <div class="memories-header">
+          <h2>All Memories</h2>
+          <div class="filters">
+            <select id="filter-project" class="filter-select">
+              <option value="">All Projects</option>
+            </select>
+            <select id="filter-type" class="filter-select">
+              <option value="">All Types</option>
+              <option value="reasoning">Reasoning</option>
+              <option value="tool_capture">Tool Capture</option>
+              <option value="summary">Summary</option>
+              <option value="manual">Manual</option>
+            </select>
+            <select id="filter-tool" class="filter-select">
+              <option value="">All Tools</option>
+              <option value="Edit">Edit</option>
+              <option value="Write">Write</option>
+              <option value="Bash">Bash</option>
+              <option value="Task">Task</option>
+            </select>
+            <input type="date" id="filter-start-date" class="filter-input" placeholder="Start Date">
+            <input type="date" id="filter-end-date" class="filter-input" placeholder="End Date">
+            <button id="apply-filters" class="btn btn-primary">Apply</button>
+            <button id="clear-filters" class="btn btn-secondary">Clear</button>
+          </div>
+        </div>
+        <div id="memories-list" class="memory-list"></div>
+        <div id="memories-pagination" class="pagination"></div>
+      </section>
+
+      <!-- Search View -->
+      <section id="view-search" class="view">
+        <div class="search-container">
+          <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Search memories...">
+            <button id="search-btn" class="btn btn-primary">Search</button>
+          </div>
+          <div class="search-options">
+            <label>
+              <input type="radio" name="search-scope" value="all" checked> All Memories
+            </label>
+            <label>
+              <input type="radio" name="search-scope" value="project"> Project Only
+            </label>
+            <label>
+              <input type="radio" name="search-scope" value="global"> Global Profile
+            </label>
+            <select id="search-project" class="filter-select" style="margin-left: 1rem;">
+              <option value="">Select Project</option>
+            </select>
+          </div>
+        </div>
+        <div id="search-results" class="memory-list"></div>
+        <div id="search-info" class="search-info"></div>
+      </section>
+
+      <!-- Global Profile View -->
+      <section id="view-global" class="view">
+        <h2>Global Profile</h2>
+        <p class="section-desc">Cross-project preferences and patterns that apply to all sessions.</p>
+        <div id="global-profiles" class="memory-list"></div>
+      </section>
+
+      <!-- Settings View -->
+      <section id="view-settings" class="view">
+        <div class="settings-container">
+          <div class="settings-header">
+            <h2>Settings</h2>
+            <p class="section-desc">Configure memory capture behavior and system preferences.</p>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Capture Settings Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+                <h3>Memory Capture</h3>
+              </div>
+              <p class="settings-card-desc">Control what gets captured from Claude sessions.</p>
+
+              <div class="settings-group">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-capture-reasoning">Capture Reasoning</label>
+                    <span class="setting-hint">Save Claude's explanatory responses as memories</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-capture-reasoning" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-max-reasoning">Max Reasoning Length</label>
+                    <span class="setting-hint">Maximum characters for reasoning captures</span>
+                  </div>
+                  <input type="number" id="setting-max-reasoning" class="setting-input" value="10000" min="100" max="100000">
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-max-tool">Max Tool Output Length</label>
+                    <span class="setting-hint">Maximum characters for tool output captures</span>
+                  </div>
+                  <input type="number" id="setting-max-tool" class="setting-input" value="2000" min="100" max="50000">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tool Capture Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                </div>
+                <h3>Tool Capture</h3>
+              </div>
+              <p class="settings-card-desc">Enable capturing specific tool operations. All disabled by default to avoid noise.</p>
+
+              <div class="settings-group">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-tool-edit">Edit Tool</label>
+                    <span class="setting-hint">File modifications and code changes</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-tool-edit">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-tool-write">Write Tool</label>
+                    <span class="setting-hint">New file creation operations</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-tool-write">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-tool-bash">Bash Tool</label>
+                    <span class="setting-hint">Command line operations</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-tool-bash">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-tool-task">Task Tool</label>
+                    <span class="setting-hint">Agent task delegations</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-tool-task">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Settings Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                </div>
+                <h3>System</h3>
+              </div>
+              <p class="settings-card-desc">Debug and diagnostic options.</p>
+
+              <div class="settings-group">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <label for="setting-debug">Debug Mode</label>
+                    <span class="setting-hint">Enable verbose logging to ~/.memextend/debug.log</span>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="setting-debug">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-actions">
+            <button id="settings-save" class="btn btn-primary btn-lg">Save Settings</button>
+            <button id="settings-reset" class="btn btn-secondary">Reset to Defaults</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Memory Detail Modal -->
+    <div id="memory-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Memory Details</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="memory-detail-meta">
+            <span class="memory-id">ID: <code id="modal-id"></code></span>
+            <span class="memory-type" id="modal-type"></span>
+            <span class="memory-date" id="modal-date"></span>
+          </div>
+          <div class="memory-detail-content">
+            <label>Content:</label>
+            <textarea id="modal-content" class="content-editor"></textarea>
+          </div>
+          <div class="memory-detail-meta">
+            <span>Source: <span id="modal-source"></span></span>
+            <span>Project: <span id="modal-project"></span></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-save" class="btn btn-primary">Save Changes</button>
+          <button id="modal-delete" class="btn btn-danger">Delete</button>
+          <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3>Confirm Delete</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this memory? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirm-delete" class="btn btn-danger">Delete</button>
+          <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

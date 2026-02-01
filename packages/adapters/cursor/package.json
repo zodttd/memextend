@@ -1,0 +1,52 @@
+{
+  "name": "@memextend/cursor",
+  "version": "0.1.0",
+  "description": "Cursor IDE adapter for memextend - persistent AI memory",
+  "author": "ZodTTD LLC",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "memextend-cursor": "./dist/cli/index.cjs",
+    "memextend-cursor-capture": "./dist/cli/capture.cjs",
+    "memextend-cursor-inject": "./dist/cli/inject.cjs"
+  },
+  "scripts": {
+    "build": "tsc && npm run build:mcp && npm run build:cli",
+    "build:mcp": "node scripts/build-mcp.js",
+    "build:cli": "node scripts/build-cli.js",
+    "test": "vitest run",
+    "postinstall": "node scripts/postinstall.js || true"
+  },
+  "dependencies": {
+    "@memextend/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "cursor",
+    "ai",
+    "memory",
+    "mcp",
+    "model-context-protocol",
+    "llm",
+    "claude"
+  ]
+}

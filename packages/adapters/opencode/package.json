@@ -1,0 +1,51 @@
+{
+  "name": "@memextend/opencode",
+  "version": "0.1.0",
+  "description": "OpenCode adapter for memextend - provides memory integration via MCP for anomalyco/opencode",
+  "author": "ZodTTD LLC",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
+    }
+  },
+  "bin": {
+    "memextend-opencode-mcp": "dist/mcp/server.cjs"
+  },
+  "scripts": {
+    "build": "tsc && npm run build:bundle",
+    "build:bundle": "node scripts/build.js",
+    "test": "vitest run",
+    "setup": "node dist/setup.js"
+  },
+  "dependencies": {
+    "@memextend/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  },
+  "keywords": [
+    "opencode",
+    "anomalyco",
+    "mcp",
+    "model-context-protocol",
+    "ai-memory",
+    "memextend",
+    "ai-coding",
+    "coding-agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zodttd/memextend.git",
+    "directory": "packages/adapters/opencode"
+  }
+}
