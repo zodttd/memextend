@@ -53,10 +53,12 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
   console.log(chalk.cyan('    - Claude Code MCP server registration'));
   console.log(chalk.cyan('    - memextend section from ~/.claude/CLAUDE.md'));
   console.log(chalk.cyan('    - PATH entries from shell config (.zshrc, .bashrc, fish)'));
+  console.log(chalk.cyan('    - ~/.memextend/repo/ (installation)'));
+  console.log(chalk.cyan('    - ~/.memextend/bin/ (CLI symlink)'));
   if (!options.keepData) {
-    console.log(chalk.red('    - All memories and data in ~/.memextend/'));
+    console.log(chalk.red('    - All memories and data files in ~/.memextend/'));
   } else {
-    console.log(chalk.yellow('    - (keeping data in ~/.memextend/ due to --keep-data flag)'));
+    console.log(chalk.yellow('    - (keeping data files in ~/.memextend/ due to --keep-data flag)'));
   }
   console.log('');
 
@@ -91,13 +93,29 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
       spinner.info('No shell configs needed cleanup');
     }
 
-    // Step 4: Remove data directory (unless --keep-data)
+    // Step 4: Always remove repo and bin (code/installation)
+    spinner.start('Removing memextend installation...');
+    await rm(join(MEMEXTEND_DIR, 'repo'), { recursive: true, force: true });
+    await rm(join(MEMEXTEND_DIR, 'bin'), { recursive: true, force: true });
+    spinner.succeed('Removed ~/.memextend/repo/ and ~/.memextend/bin/');
+
+    // Step 5: Remove data files (unless --keep-data)
     if (!options.keepData) {
       spinner.start('Removing memextend data...');
-      await rm(MEMEXTEND_DIR, { recursive: true, force: true });
-      spinner.succeed('Removed ~/.memextend/ directory');
+      // Remove data files but not the directories we already removed
+      const dataFiles = ['memextend.db', 'memextend.db-shm', 'memextend.db-wal', 'vectors.db', 'config.json', 'capture-state.json', 'webui.log', 'webui.pid'];
+      for (const file of dataFiles) {
+        await rm(join(MEMEXTEND_DIR, file), { force: true });
+      }
+      // Remove data directories
+      await rm(join(MEMEXTEND_DIR, 'models'), { recursive: true, force: true });
+      await rm(join(MEMEXTEND_DIR, 'vectors'), { recursive: true, force: true });
+      await rm(join(MEMEXTEND_DIR, 'logs'), { recursive: true, force: true });
+      // Remove the directory itself if empty
+      await rm(MEMEXTEND_DIR, { force: true }).catch(() => {});
+      spinner.succeed('Removed ~/.memextend/ data');
     } else {
-      spinner.info('Keeping ~/.memextend/ data directory');
+      spinner.info('Keeping ~/.memextend/ data files');
     }
 
     console.log(chalk.green('\n  ✅ memextend has been uninstalled.\n'));
