@@ -30,8 +30,6 @@ const PACKAGE_JSON_FILES = [
 ];
 
 // Files with hardcoded version strings that can't read from package.json
-// Note: Most source files now read version from package.json at runtime or build time
-// Only shell scripts and similar need explicit version strings
 const VERSION_STRING_FILES = [
   { file: 'install.sh', pattern: /^VERSION="[\d.]+"$/m, replacement: (v) => `VERSION="${v}"` },
 ];
