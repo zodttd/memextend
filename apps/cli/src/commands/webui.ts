@@ -2,9 +2,13 @@
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import chalk from 'chalk';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
