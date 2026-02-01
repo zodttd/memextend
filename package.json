@@ -1,6 +1,6 @@
 {
   "name": "memextend",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Extend your AI coding assistant's memory. Free, local, private.",
   "author": "ZodTTD LLC",
@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --ext .ts",
-    "clean": "rm -rf packages/*/dist packages/adapters/*/dist apps/*/dist"
+    "clean": "rm -rf packages/*/dist packages/adapters/*/dist apps/*/dist",
+    "version:bump": "node scripts/bump-version.js",
+    "version:sync": "node scripts/bump-version.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

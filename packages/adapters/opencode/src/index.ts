@@ -28,7 +28,7 @@
  */
 
 export const ADAPTER_NAME = 'opencode';
-export const ADAPTER_VERSION = '0.1.1';
+export const ADAPTER_VERSION = '0.1.2';
 export const ADAPTER_STATUS = 'implemented';
 
 // Export MCP server utilities
