@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.12"
+VERSION="0.3.13"
 
 # Colors
 RED='\033[0;31m'
@@ -399,7 +399,15 @@ init_data() {
     "autoInject": true,
     "maxMemories": 0,
     "recentDays": 0,
-    "includeGlobal": true
+    "includeGlobal": true,
+    "deduplicationThreshold": 0.98,
+    "sessionMaxChars": 10000,
+    "compactMaxChars": 2000
+  },
+  "storage": {
+    "maxMemoriesPerProject": 20000,
+    "maxTotalMemories": 0,
+    "deduplicateOnPrune": false
   },
   "debug": false
 }

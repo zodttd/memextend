@@ -1,6 +1,6 @@
 {
   "name": "@memextend/core",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "description": "Core memory storage and retrieval for memextend - local AI memory extension",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
