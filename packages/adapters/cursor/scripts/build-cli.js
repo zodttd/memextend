@@ -16,7 +16,7 @@ const commonOptions = {
   target: 'node18',
   format: 'cjs',
   // External native modules that can't be bundled
-  external: ['better-sqlite3', 'node-llama-cpp'],
+  external: ['better-sqlite3', 'node-llama-cpp', 'sqlite-vec'],
   logLevel: 'warning',
   // Add shebang for CLI executables
   banner: {

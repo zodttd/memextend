@@ -1,6 +1,6 @@
 {
   "name": "@memextend/opencode",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "OpenCode adapter for memextend - MCP server for anomalyco/opencode AI memory",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",

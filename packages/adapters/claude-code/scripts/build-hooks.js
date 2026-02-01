@@ -15,7 +15,7 @@ const commonOptions = {
   platform: 'node',
   target: 'node18',
   format: 'cjs',
-  external: ['better-sqlite3', 'node-llama-cpp'],
+  external: ['better-sqlite3', 'node-llama-cpp', 'sqlite-vec'],
   logLevel: 'warning',
 };
 
