@@ -136,7 +136,10 @@ async function setupCursor(): Promise<void> {
   const cursorrrulesSource = getCursorrrulesPath();
   const cursorrulesTarget = join(process.cwd(), '.cursorrules');
 
-  if (existsSync(cursorrrulesSource)) {
+  if (!existsSync(cursorrrulesSource)) {
+    console.log(`Warning: .cursorrules template not found at ${cursorrrulesSource}`);
+    console.log('Skipping .cursorrules setup.\n');
+  } else {
     try {
       const sourceContent = await readFile(cursorrrulesSource, 'utf-8');
 
@@ -163,7 +166,7 @@ async function setupCursor(): Promise<void> {
         }
       }
     } catch (error) {
-      console.log('Note: Could not update .cursorrules in current directory.');
+      console.log(`Note: Could not update .cursorrules: ${error}`);
       console.log(`You can manually copy from: ${cursorrrulesSource}\n`);
     }
   }

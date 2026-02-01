@@ -121,7 +121,10 @@ async function setupOpenCode(): Promise<void> {
   const agentsMdSource = getAgentsMdPath();
   const agentsMdTarget = join(dirname(configPath), 'AGENTS.md');
 
-  if (existsSync(agentsMdSource)) {
+  if (!existsSync(agentsMdSource)) {
+    console.log(`Warning: AGENTS.md template not found at ${agentsMdSource}`);
+    console.log('Skipping AGENTS.md setup.\n');
+  } else {
     try {
       const sourceContent = await readFile(agentsMdSource, 'utf-8');
       await mkdir(dirname(agentsMdTarget), { recursive: true });
@@ -149,7 +152,7 @@ async function setupOpenCode(): Promise<void> {
         }
       }
     } catch (error) {
-      console.log('Note: Could not update AGENTS.md in config directory.');
+      console.log(`Note: Could not update AGENTS.md: ${error}`);
       console.log(`You can manually copy from: ${agentsMdSource}\n`);
     }
   }

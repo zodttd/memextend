@@ -276,12 +276,14 @@ async function createClaudeMd(): Promise<boolean> {
       // No memextend markers - prepend to existing file (put memextend first)
       const trimmedExisting = existing.trim();
       await writeFile(CLAUDE_MD_PATH, CLAUDE_MD_TEMPLATE + (trimmedExisting ? '\n\n' + trimmedExisting : '') + '\n');
+      return true;
     } else {
       // Create new file
       await writeFile(CLAUDE_MD_PATH, CLAUDE_MD_TEMPLATE + '\n');
+      return true;
     }
-    return true;
-  } catch {
+  } catch (error) {
+    console.error(`[memextend] Failed to create CLAUDE.md: ${error}`);
     return false;
   }
 }
