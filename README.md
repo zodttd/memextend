@@ -77,26 +77,57 @@ memextend search "patterns"               # Search both (default)
 ## How It Works
 
 ### Capture
-When your session ends, memextend saves significant actions:
-- **Edit** - File modifications with context
-- **Write** - New files created
-- **Bash** - Commands executed
-- **Task** - Agent task results
+
+memextend captures two types of content:
+
+**Reasoning (enabled by default):**
+- Claude's explanatory responses and thought processes
+- Captured automatically before context compaction
+- Maximum 10,000 characters per capture
+
+**Tool Calls (disabled by default):**
+- Edit, Write, Bash, Task tool invocations
+- Enable selectively via WebUI Settings or config file
+- Useful for tracking specific file changes or commands
+
+Configure capture settings via:
+- **WebUI**: `memextend webui` → Settings tab
+- **Config file**: `~/.memextend/config.json`
+
+### Context Compaction Handling
+
+When Claude's context gets compacted (summarized to free space), memextend:
+
+1. **Before compaction** - Captures important reasoning and enabled tool calls via `PreCompact` hook
+2. **After compaction** - Re-injects preserved memories via `SessionStart` hook with `source: compact`
+3. **Doubled context** - Injects up to 2x normal memories after compaction to restore context
+
+This ensures important context survives long sessions where compaction occurs.
 
 ### Recall
+
 When a new session starts, memextend:
 1. Identifies your project (via git root hash)
 2. Retrieves relevant memories (recent work + semantic matches)
 3. Includes your global preferences
 4. Injects context automatically via `<memextend-context>` tag
+5. Includes usage hints for `memextend_search` and `memextend_save`
 
 ### Search
+
 Mid-session, Claude can use MCP tools:
 - `memextend_search` - Find memories by query
 - `memextend_save` - Save a new project memory
 - `memextend_save_global` - Save a global preference
 - `memextend_forget` - Delete a memory
 - `memextend_status` - Show memory statistics
+
+### Claude Guidance
+
+During `memextend init`, a `~/.claude/CLAUDE.md` template is created with:
+- Overview of available MCP tools
+- When to search memories (returning to projects, referencing past decisions)
+- When to save memories (architectural decisions, conventions, preferences)
 
 ## CLI Commands
 
@@ -168,6 +199,27 @@ The web UI provides:
 - **Search** - Hybrid search with semantic and keyword matching
 - **Edit/Delete** - Modify or remove individual memories
 - **Global Profiles** - View cross-project preferences
+- **Settings** - Configure capture and retrieval options:
+  - Toggle reasoning capture and individual tool capture
+  - Set max content lengths for captures
+  - Configure auto-injection, max memories, and recent days
+  - Enable/disable global profile inclusion
+
+### Uninstall
+
+```bash
+memextend uninstall                 # Interactive uninstall with confirmation
+memextend uninstall --force         # Skip confirmation prompt
+memextend uninstall --keep-data     # Remove integrations but keep memories
+```
+
+Uninstall removes:
+- Claude Code hooks (SessionStart, Stop, PreCompact)
+- Claude Code MCP server registration
+- memextend section from `~/.claude/CLAUDE.md`
+- All data in `~/.memextend/` (unless `--keep-data`)
+
+After using `--keep-data`, you can reinstall with `memextend init` to reconnect your memories.
 
 ### Help
 
@@ -178,7 +230,16 @@ memextend help search               # Help for search command
 memextend help forget               # Help for forget command
 memextend help edit                 # Help for edit command
 memextend help webui                # Help for webui command
+memextend help uninstall            # Help for uninstall command
 memextend --help                    # Quick command reference
+```
+
+Use `-h` or `--help` on any command for options:
+
+```bash
+memextend webui -h                  # Show webui options (--port, --host)
+memextend search -h                 # Show search options (--project, --global, --limit)
+memextend uninstall -h              # Show uninstall options (--force, --keep-data)
 ```
 
 ## Architecture
@@ -216,22 +277,52 @@ Config file: `~/.memextend/config.json`
 {
   "version": 1,
   "capture": {
-    "tools": ["Edit", "Write", "Bash", "Task"],
-    "skipTools": ["Read", "Glob", "Grep", "TodoWrite"],
-    "maxContentLength": 2000
+    "captureReasoning": true,
+    "maxReasoningLength": 10000,
+    "maxToolOutputLength": 2000,
+    "tools": {
+      "Edit": false,
+      "Write": false,
+      "Bash": false,
+      "Task": false
+    }
   },
   "retrieval": {
     "autoInject": true,
     "maxMemories": 10,
     "recentDays": 7,
     "includeGlobal": true
-  }
+  },
+  "debug": false
 }
 ```
 
+### Capture Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `captureReasoning` | `true` | Capture Claude's explanatory responses |
+| `maxReasoningLength` | `10000` | Max characters for reasoning captures |
+| `maxToolOutputLength` | `2000` | Max characters for tool output captures |
+| `tools.Edit` | `false` | Capture Edit tool invocations |
+| `tools.Write` | `false` | Capture Write tool invocations |
+| `tools.Bash` | `false` | Capture Bash tool invocations |
+| `tools.Task` | `false` | Capture Task tool invocations |
+
+### Retrieval Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `autoInject` | `true` | Auto-inject memories at session start |
+| `maxMemories` | `10` | Maximum memories to inject per session |
+| `recentDays` | `7` | Days to look back for recent memories |
+| `includeGlobal` | `true` | Include global profile in injection |
+
+All settings can be configured via the WebUI Settings page (`memextend webui`).
+
 ## Claude Code Integration
 
-Add to `~/.claude/settings.json`:
+The installer automatically configures Claude Code. For manual setup, add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -245,6 +336,11 @@ Add to `~/.claude/settings.json`:
       "command": "node",
       "args": ["/path/to/memextend/packages/adapters/claude-code/dist/hooks/stop.cjs"],
       "timeout": 30000
+    },
+    "PreCompact": {
+      "command": "node",
+      "args": ["/path/to/memextend/packages/adapters/claude-code/dist/hooks/pre-compact.cjs"],
+      "timeout": 30000
     }
   },
   "mcpServers": {
@@ -255,6 +351,14 @@ Add to `~/.claude/settings.json`:
   }
 }
 ```
+
+### Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `SessionStart` | Inject memories at session start (including after compaction) |
+| `Stop` | Capture memories when session ends |
+| `PreCompact` | Capture memories before context compaction (preserves context) |
 
 ## Embedding Model
 
@@ -316,6 +420,11 @@ Everything stays on your machine:
 - [x] OpenCode adapter (MCP server for anomalyco/opencode) ⚠️ *experimental*
 - [x] Cursor adapter (MCP server + CLI tools) ⚠️ *experimental*
 - [x] Web UI for browsing memories
+- [x] Web UI Settings for capture/retrieval configuration
+- [x] Context compaction handling (PreCompact hook + post-compact injection)
+- [x] Reasoning capture (Claude's explanatory responses)
+- [x] Uninstall command with data preservation option
+- [x] CLAUDE.md template for memory tool guidance
 - [ ] VS Code extension for Cursor (better session detection)
 - [ ] OpenCode hooks (when/if supported upstream)
 
