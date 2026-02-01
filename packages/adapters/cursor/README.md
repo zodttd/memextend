@@ -230,6 +230,8 @@ Search when you need to remember:
 
 > "Search memories for how we handle error logging"
 
+**CRITICAL: If you can't find something in the codebase, search your memories.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously. Always check memories as a last resort before telling the user you can't find something.
+
 ### Ending a Session
 
 Before closing, save a summary:

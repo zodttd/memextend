@@ -173,6 +173,8 @@ Then interact with memextend through natural language:
 > Show me the memextend status
 ```
 
+**CRITICAL: If you can't find something in the codebase, search your memories.** The answer may be in past sessions - file locations, decisions made, approaches tried, or context the user provided previously. Always check memories as a last resort before telling the user you can't find something.
+
 ## How It Works
 
 1. **MCP Integration**: OpenCode connects to the memextend MCP server via stdio
