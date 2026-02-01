@@ -86,34 +86,34 @@ const MODELS_PATH = join(MEMEXTEND_DIR, 'models');
 
 // Lazy-loaded storage instances
 let sqlite: SQLiteStorage | null = null;
-let lancedb: LanceDBStorage | null = null;
+let vectorStore: LanceDBStorage | null = null;
 let retriever: MemoryRetriever | null = null;
 let embedder: Awaited<ReturnType<typeof createEmbedFunction>> | null = null;
 
 async function getStorage(): Promise<{
   sqlite: SQLiteStorage;
-  lancedb: LanceDBStorage;
+  vectorStore: LanceDBStorage;
   retriever: MemoryRetriever;
   embedder: Awaited<ReturnType<typeof createEmbedFunction>>;
 }> {
-  if (!sqlite || !lancedb || !retriever || !embedder) {
+  if (!sqlite || !vectorStore || !retriever || !embedder) {
     if (!existsSync(DB_PATH)) {
       throw new Error('memextend not initialized. Run `memextend init` first.');
     }
 
     sqlite = new SQLiteStorage(DB_PATH);
-    lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    vectorStore = await LanceDBStorage.create(VECTORS_PATH);
     embedder = await createEmbedFunction(MODELS_PATH);
-    retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery);
+    retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
   }
 
-  return { sqlite, lancedb, retriever, embedder };
+  return { sqlite, vectorStore, retriever, embedder };
 }
 
 const server = new Server(
   {
     name: 'memextend',
-    version: '0.2.0',
+    version: '0.3.0',
   },
   {
     capabilities: {
@@ -237,7 +237,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_save': {
-        const { sqlite, lancedb, embedder } = await getStorage();
+        const { sqlite, vectorStore, embedder } = await getStorage();
         const content = args?.content as string;
         const projectIdArg = args?.projectId as string;
 
@@ -287,7 +287,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
 
         const vector = await embedder.embed(content);
-        await lancedb.insertVector(memoryId, vector);
+        await vectorStore.insertVector(memoryId, vector);
 
         return { content: [{ type: 'text', text: `Memory saved to "${projectName}" with ID: ${memoryId}` }] };
       }
@@ -317,13 +317,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_forget': {
-        const { sqlite, lancedb } = await getStorage();
+        const { sqlite, vectorStore } = await getStorage();
         const memoryId = args?.memoryId as string;
 
         const deleted = sqlite.deleteMemory(memoryId);
         if (deleted) {
           // Also delete the vector embedding
-          await lancedb.deleteVector(memoryId);
+          await vectorStore.deleteVector(memoryId);
           return { content: [{ type: 'text', text: `Memory ${memoryId} deleted.` }] };
         } else {
           return { content: [{ type: 'text', text: `Memory ${memoryId} not found.` }] };
@@ -331,9 +331,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'memextend_status': {
-        const { sqlite, lancedb, embedder } = await getStorage();
+        const { sqlite, vectorStore, embedder } = await getStorage();
         const memoryCount = sqlite.getMemoryCount();
-        const vectorCount = await lancedb.getVectorCount();
+        const vectorCount = await vectorStore.getVectorCount();
 
         // Debug: show project detection info
         const detected = getCurrentProjectId();

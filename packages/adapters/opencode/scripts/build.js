@@ -17,7 +17,7 @@ const commonOptions = {
   format: 'cjs',
   // External packages that should not be bundled
   // These are native modules or have complex dependencies
-  external: ['better-sqlite3', 'node-llama-cpp', '@lancedb/lancedb'],
+  external: ['better-sqlite3', 'node-llama-cpp'],
   logLevel: 'warning',
 };
 

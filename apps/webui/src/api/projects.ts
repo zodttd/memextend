@@ -117,7 +117,7 @@ projectsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { SQLiteStorage, LanceDBStorage } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
 
     // Get all memory IDs for this project before deleting (for vector cleanup)
     const memories = sqlite.getAllMemories(req.params.id, 100000);
@@ -130,7 +130,7 @@ projectsRouter.delete('/:id', async (req: Request, res: Response) => {
     let vectorsDeleted = 0;
     for (const memoryId of memoryIds) {
       try {
-        await lancedb.deleteVector(memoryId);
+        await vectorStore.deleteVector(memoryId);
         vectorsDeleted++;
       } catch {
         // Ignore vector deletion errors
@@ -138,7 +138,7 @@ projectsRouter.delete('/:id', async (req: Request, res: Response) => {
     }
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     if (!result.projectDeleted && result.memoriesDeleted === 0) {
       res.status(404).json({ error: 'Project not found' });

@@ -116,7 +116,7 @@ export async function importCommand(filePath: string, options: ImportOptions): P
     // Import data
     const { SQLiteStorage, LanceDBStorage, createEmbedFunction } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
     const embedder = await createEmbedFunction(MODELS_PATH);
 
     let importedMemories = 0;
@@ -150,7 +150,7 @@ export async function importCommand(filePath: string, options: ImportOptions): P
 
       // Generate and store embedding
       const vector = await embedder.embed(memory.content);
-      await lancedb.insertVector(memory.id, vector);
+      await vectorStore.insertVector(memory.id, vector);
 
       importedMemories++;
     }
@@ -183,7 +183,7 @@ export async function importCommand(filePath: string, options: ImportOptions): P
     console.log('');
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
 
   } catch (error) {

@@ -1,6 +1,6 @@
 {
   "name": "@memextend/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core memory storage and retrieval for memextend - local AI memory extension",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
@@ -19,13 +19,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@lancedb/lancedb": "^0.23.0",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^11.10.0",
     "node-llama-cpp": "^3.0.0",
+    "sqlite-vec": "^0.1.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.8",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/uuid": "^9.0.7"
   },
   "repository": {
@@ -44,7 +44,6 @@
     "claude",
     "vector-search",
     "sqlite",
-    "lancedb",
     "embeddings",
     "semantic-search"
   ],

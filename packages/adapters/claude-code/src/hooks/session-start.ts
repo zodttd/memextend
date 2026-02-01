@@ -76,12 +76,12 @@ async function main(): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
 
     // Create embedding function (uses real model if available, fallback otherwise)
     const embedder = await createEmbedFunction(MODELS_PATH);
 
-    const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery, {
+    const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery, {
       defaultLimit: config.retrieval?.maxMemories ?? 0,
       defaultRecentDays: config.retrieval?.recentDays ?? 0,
     });
@@ -134,7 +134,7 @@ async function main(): Promise<void> {
     if (allMemories.length > 1) {
       // Fetch vectors for all memories
       const memoryIds = allMemories.map(m => m.id);
-      const vectors = await lancedb.getVectorsByIds(memoryIds);
+      const vectors = await vectorStore.getVectorsByIds(memoryIds);
 
       if (vectors.size > 0) {
         deduplicatedMemories = deduplicateMemories(allMemories, vectors, {
@@ -155,7 +155,7 @@ async function main(): Promise<void> {
 
     // Close storage and embedder
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
 
     // Check if there's anything to inject

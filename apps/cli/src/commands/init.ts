@@ -113,7 +113,7 @@ interface InitOptions {
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
-  console.log(chalk.bold('\n  memextend v0.2.0\n'));
+  console.log(chalk.bold('\n  memextend v0.3.0\n'));
 
   if (options.manual) {
     printManualInstructions();
@@ -126,7 +126,6 @@ export async function initCommand(options: InitOptions): Promise<void> {
     // Step 1: Create directories
     spinner.start('Creating memextend directory...');
     await mkdir(MEMEXTEND_DIR, { recursive: true });
-    await mkdir(VECTORS_PATH, { recursive: true });
     await mkdir(MODELS_PATH, { recursive: true });
     spinner.succeed('Created ~/.memextend/');
 
@@ -137,12 +136,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
     sqlite.close();
     spinner.succeed('Initialized SQLite database');
 
-    // Step 3: Initialize LanceDB
-    spinner.start('Initializing LanceDB vectors...');
-    const { LanceDBStorage } = await import('@memextend/core');
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
-    await lancedb.close();
-    spinner.succeed('Initialized LanceDB vectors');
+    // Step 3: Initialize vector database (sqlite-vec)
+    spinner.start('Initializing vector database...');
+    const { SqliteVecStorage } = await import('@memextend/core');
+    const vectors = await SqliteVecStorage.create(VECTORS_PATH);
+    await vectors.close();
+    spinner.succeed('Initialized vector database');
 
     // Step 4: Write config
     spinner.start('Writing configuration...');

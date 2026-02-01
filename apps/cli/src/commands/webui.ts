@@ -334,9 +334,9 @@ async function startInlineServer(port: number, host: string): Promise<void> {
           const memories = sqlite.getAllMemories(undefined, 10000);
           const globalProfiles = sqlite.getGlobalProfiles(100);
 
-          const lancedb = await LanceDBStorage.create(VECTORS_PATH);
-          const vectorCount = await lancedb.getVectorCount();
-          await lancedb.close();
+          const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+          const vectorCount = await vectorStore.getVectorCount();
+          await vectorStore.close();
 
           const typeBreakdown: Record<string, number> = {};
           const sourceBreakdown: Record<string, number> = {};
@@ -423,14 +423,14 @@ async function startInlineServer(port: number, host: string): Promise<void> {
             return;
           }
 
-          const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+          const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
           const embedder = await createEmbedFunction(MODELS_PATH);
-          const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery);
+          const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
 
           const results = await retriever.hybridSearch(query, { limit: 20 });
 
           sqlite.close();
-          await lancedb.close();
+          await vectorStore.close();
           await embedder.close();
 
           res.writeHead(200);

@@ -195,7 +195,7 @@ OpenCode automatically loads `AGENTS.md` files and includes them in the agent's 
 2. **Tool Discovery**: OpenCode discovers the memextend tools at startup
 3. **Semantic Search**: Memories are embedded using the Nomic embed model for semantic search
 4. **Hybrid Search**: Combines vector similarity with full-text search for best results
-5. **Persistent Storage**: Memories are stored in SQLite with LanceDB for vectors
+5. **Persistent Storage**: Memories are stored in SQLite with sqlite-vec for vectors
 
 ## Configuration Reference
 

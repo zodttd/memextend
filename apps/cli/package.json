@@ -1,6 +1,6 @@
 {
   "name": "memextend",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Extend your AI coding assistant's memory. Free, local, private.",
   "author": "ZodTTD LLC <repo@zodttd.com>",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@memextend/core": "^0.2.0",
+    "@memextend/core": "^0.3.0",
     "@memextend/claude-code": "^0.2.0",
     "@memextend/webui": "^0.2.0",
     "commander": "^12.0.0",

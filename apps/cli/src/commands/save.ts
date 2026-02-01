@@ -79,7 +79,7 @@ export async function saveCommand(options: SaveOptions): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
     const embedder = await LocalEmbedding.create(MEMEXTEND_DIR);
 
     // Create memory
@@ -100,10 +100,10 @@ export async function saveCommand(options: SaveOptions): Promise<void> {
 
     // Generate and save embedding
     const embedding = await embedder.embed(content);
-    await lancedb.insertVector(memoryId, embedding);
+    await vectorStore.insertVector(memoryId, embedding);
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     const scope = projectId ? `project: ${projectId.slice(0, 8)}...` : 'global';
     console.log(chalk.green(`\n  Memory saved (${scope})`));

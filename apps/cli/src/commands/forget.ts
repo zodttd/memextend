@@ -42,7 +42,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
   try {
     const { SQLiteStorage, LanceDBStorage, getCurrentProjectId } = await import('@memextend/core');
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
 
     // Clear global profile: --clear-global
     if (options.clearGlobal) {
@@ -50,7 +50,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (profiles.length === 0) {
         console.log(chalk.yellow('\n  No global profile entries to clear.\n'));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
@@ -60,13 +60,13 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (!confirmed) {
         console.log(chalk.dim('\n  Cancelled.\n'));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
       const deleted = sqlite.deleteAllGlobalProfiles();
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       console.log(chalk.green(`\n  ✓ Cleared ${deleted} global profile entries.\n`));
       return;
     }
@@ -90,7 +90,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
         }
         console.log('');
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
@@ -101,7 +101,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (!confirmed) {
         console.log(chalk.dim('\n  Cancelled.\n'));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
@@ -116,7 +116,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       let vectorsDeleted = 0;
       for (const id of memoryIds) {
         try {
-          await lancedb.deleteVector(id);
+          await vectorStore.deleteVector(id);
           vectorsDeleted++;
         } catch {
           // Ignore vector deletion errors
@@ -124,7 +124,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       }
 
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       console.log(chalk.green(`\n  ✓ Deleted ${result.memoriesDeleted} memories from project "${project.name}".\n`));
       return;
     }
@@ -140,7 +140,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (!confirmed) {
         console.log(chalk.dim('\n  Cancelled.\n'));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
@@ -148,7 +148,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       // For now, just delete from SQLite (vectors become orphaned but harmless)
       const deleted = sqlite.deleteAllMemories(projectId ?? undefined);
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       console.log(chalk.green(`\n  ✓ Deleted ${deleted} memories.\n`));
       console.log(chalk.dim('  Note: Run `memextend init` to rebuild vector index if needed.\n'));
       return;
@@ -160,7 +160,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (isNaN(date.getTime())) {
         console.log(chalk.red(`\n  ✗ Invalid date: ${options.before}. Use YYYY-MM-DD format.\n`));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
@@ -173,14 +173,14 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       if (!confirmed) {
         console.log(chalk.dim('\n  Cancelled.\n'));
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         return;
       }
 
       // Note: Bulk delete doesn't delete vectors individually - would need to iterate
       const deleted = sqlite.deleteMemoriesBefore(date, projectId ?? undefined);
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       console.log(chalk.green(`\n  ✓ Deleted ${deleted} memories.\n`));
       console.log(chalk.dim('  Note: Run `memextend init` to rebuild vector index if needed.\n'));
       return;
@@ -197,7 +197,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
       console.log(chalk.dim('    memextend forget --delete-project <name>  Delete all memories in a project'));
       console.log(chalk.dim('    memextend forget --clear-global        Clear all global profile entries\n'));
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       return;
     }
 
@@ -206,7 +206,7 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
     if (!memory) {
       console.log(chalk.yellow(`\n  ⚠ Memory not found: ${memoryId}\n`));
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       return;
     }
 
@@ -217,10 +217,10 @@ export async function forgetCommand(memoryId: string | undefined, options: Forge
     // Delete memory and its vector
     const deleted = sqlite.deleteMemory(memoryId);
     if (deleted) {
-      await lancedb.deleteVector(memoryId);
+      await vectorStore.deleteVector(memoryId);
     }
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     if (deleted) {
       console.log(chalk.green(`  ✓ Memory ${memoryId} deleted.\n`));

@@ -53,8 +53,8 @@ export async function optimizeCommand(): Promise<void> {
   const spinner = ora('Optimizing LanceDB storage...').start();
 
   try {
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
-    const stats = await lancedb.optimize();
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
+    const stats = await vectorStore.optimize();
 
     spinner.stop();
 

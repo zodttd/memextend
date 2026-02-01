@@ -21,11 +21,11 @@ searchRouter.get('/', async (req: Request, res: Response) => {
     const { SQLiteStorage, LanceDBStorage, MemoryRetriever, createEmbedFunction } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
 
     // Create embedding function
     const embedder = await createEmbedFunction(req.app.locals.modelsPath);
-    const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery);
+    const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
 
     let results;
 
@@ -38,7 +38,7 @@ searchRouter.get('/', async (req: Request, res: Response) => {
       );
 
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       await embedder.close();
 
       res.json({
@@ -60,7 +60,7 @@ searchRouter.get('/', async (req: Request, res: Response) => {
     results = await retriever.hybridSearch(query, { limit, projectId: searchProjectId });
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
 
     res.json({

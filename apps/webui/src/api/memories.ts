@@ -10,14 +10,14 @@ export const memoriesRouter = Router();
 async function getStorage(req: Request) {
   const { SQLiteStorage, LanceDBStorage } = await import('@memextend/core');
   const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-  const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
-  return { sqlite, lancedb };
+  const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
+  return { sqlite, vectorStore };
 }
 
 // GET /api/memories - List memories with pagination
 memoriesRouter.get('/', async (req: Request, res: Response) => {
   try {
-    const { sqlite, lancedb } = await getStorage(req);
+    const { sqlite, vectorStore } = await getStorage(req);
 
     const limit = parseInt(req.query.limit as string || '50', 10);
     const offset = parseInt(req.query.offset as string || '0', 10);
@@ -57,7 +57,7 @@ memoriesRouter.get('/', async (req: Request, res: Response) => {
     const total = sqlite.getMemoryCount();
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     res.json({
       memories: paginatedMemories,
@@ -88,7 +88,7 @@ memoriesRouter.post('/', async (req: Request, res: Response) => {
     const { randomUUID } = await import('crypto');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
     const embedder = await LocalEmbedding.create(req.app.locals.memextendDir);
 
     const memoryId = randomUUID();
@@ -108,10 +108,10 @@ memoriesRouter.post('/', async (req: Request, res: Response) => {
 
     // Generate and save embedding
     const embedding = await embedder.embed(content);
-    await lancedb.insertVector(memoryId, embedding);
+    await vectorStore.insertVector(memoryId, embedding);
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     res.status(201).json({ success: true, id: memoryId, memory });
   } catch (error) {
@@ -123,10 +123,10 @@ memoriesRouter.post('/', async (req: Request, res: Response) => {
 // GET /api/memories/:id - Get single memory
 memoriesRouter.get('/:id', async (req: Request, res: Response) => {
   try {
-    const { sqlite, lancedb } = await getStorage(req);
+    const { sqlite, vectorStore } = await getStorage(req);
     const memory = sqlite.getMemory(req.params.id);
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     if (!memory) {
       res.status(404).json({ error: 'Memory not found' });
@@ -150,20 +150,20 @@ memoriesRouter.put('/:id', async (req: Request, res: Response) => {
       return;
     }
 
-    const { sqlite, lancedb } = await getStorage(req);
+    const { sqlite, vectorStore } = await getStorage(req);
 
     // Check if memory exists
     const existing = sqlite.getMemory(req.params.id);
     if (!existing) {
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       res.status(404).json({ error: 'Memory not found' });
       return;
     }
 
     const updated = sqlite.updateMemory(req.params.id, content);
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     if (updated) {
       res.json({ success: true, id: req.params.id });
@@ -179,13 +179,13 @@ memoriesRouter.put('/:id', async (req: Request, res: Response) => {
 // DELETE /api/memories/:id - Delete single memory
 memoriesRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const { sqlite, lancedb } = await getStorage(req);
+    const { sqlite, vectorStore } = await getStorage(req);
 
     // Check if memory exists
     const existing = sqlite.getMemory(req.params.id);
     if (!existing) {
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       res.status(404).json({ error: 'Memory not found' });
       return;
     }
@@ -193,10 +193,10 @@ memoriesRouter.delete('/:id', async (req: Request, res: Response) => {
     const deleted = sqlite.deleteMemory(req.params.id);
     if (deleted) {
       // Also delete the vector embedding
-      await lancedb.deleteVector(req.params.id);
+      await vectorStore.deleteVector(req.params.id);
     }
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     if (deleted) {
       res.json({ success: true, id: req.params.id });
@@ -215,7 +215,7 @@ memoriesRouter.delete('/', async (req: Request, res: Response) => {
     const projectId = req.query.projectId as string | undefined;
     const before = req.query.before as string | undefined;
 
-    const { sqlite, lancedb } = await getStorage(req);
+    const { sqlite, vectorStore } = await getStorage(req);
 
     let deleted = 0;
 
@@ -223,7 +223,7 @@ memoriesRouter.delete('/', async (req: Request, res: Response) => {
       const date = new Date(before);
       if (isNaN(date.getTime())) {
         sqlite.close();
-        await lancedb.close();
+        await vectorStore.close();
         res.status(400).json({ error: 'Invalid date format' });
         return;
       }
@@ -233,7 +233,7 @@ memoriesRouter.delete('/', async (req: Request, res: Response) => {
     }
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     // Note: Bulk delete doesn't delete vectors individually
     // Orphaned vectors are harmless but take up space

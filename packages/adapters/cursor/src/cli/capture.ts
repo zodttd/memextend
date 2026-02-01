@@ -201,7 +201,7 @@ async function main(): Promise<void> {
 
   // Initialize storage
   const sqlite = new SQLiteStorage(DB_PATH);
-  const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+  const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
   const embedder = await createEmbedFunction(MODELS_PATH);
 
   try {
@@ -234,7 +234,7 @@ async function main(): Promise<void> {
 
     // Generate and store embedding
     const vector = await embedder.embed(content);
-    await lancedb.insertVector(memoryId, vector);
+    await vectorStore.insertVector(memoryId, vector);
 
     if (!options.quiet) {
       console.log(`Memory captured successfully!`);
@@ -247,7 +247,7 @@ async function main(): Promise<void> {
   } finally {
     // Cleanup
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
   }
 }

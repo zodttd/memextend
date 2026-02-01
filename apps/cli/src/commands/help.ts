@@ -202,7 +202,7 @@ ${chalk.yellow.bold('FILES & DIRECTORIES')}
 
   ${chalk.dim('~/.memextend/')}              Data directory
   ${chalk.dim('~/.memextend/memextend.db')}  SQLite database (memories, FTS index)
-  ${chalk.dim('~/.memextend/vectors/')}      LanceDB vector storage
+  ${chalk.dim('~/.memextend/vectors/')}      vector storage
   ${chalk.dim('~/.memextend/models/')}       Embedding models (downloaded on first use)
   ${chalk.dim('~/.memextend/config.json')}   Configuration file
 
@@ -278,7 +278,7 @@ ${chalk.cyan.bold('memextend search <query>')}
 
 Search memories using hybrid search combining:
   • Full-text search (SQLite FTS5) for keyword matching
-  • Vector search (LanceDB) for semantic similarity
+  • Vector search (sqlite-vec) for semantic similarity
   • Reciprocal Rank Fusion to combine results
 
 ${chalk.yellow('Options:')}

@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.2.0"
+VERSION="0.3.0"
 
 # Colors
 RED='\033[0;31m'
@@ -358,7 +358,6 @@ install_memextend() {
 init_data() {
     info "Initializing data directory..."
 
-    mkdir -p "$DATA_DIR/vectors"
     mkdir -p "$DATA_DIR/models"
 
     # Create default config if not exists
@@ -388,12 +387,20 @@ init_data() {
 EOF
     fi
 
-    # Initialize SQLite database
+    # Initialize SQLite databases (main + vectors using sqlite-vec)
     node -e "
         const { SQLiteStorage } = require('$INSTALL_DIR/repo/packages/core/dist/storage/sqlite.js');
         const db = new SQLiteStorage('$DATA_DIR/memextend.db');
         db.close();
-        console.log('Database initialized');
+        console.log('Main database initialized');
+    " 2>/dev/null || true
+
+    node -e "
+        const { SqliteVecStorage } = require('$INSTALL_DIR/repo/packages/core/dist/storage/sqlite-vec.js');
+        SqliteVecStorage.create('$DATA_DIR/vectors.db').then(db => {
+            db.close();
+            console.log('Vector database initialized');
+        });
     " 2>/dev/null || true
 
     success "Data directory initialized at $DATA_DIR"

@@ -38,11 +38,11 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     const { SQLiteStorage, LanceDBStorage, getProjectId } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
 
     // Get counts
     const memoryCount = sqlite.getMemoryCount();
-    const vectorCount = await lancedb.getVectorCount();
+    const vectorCount = await vectorStore.getVectorCount();
 
     // Get project info if requested
     let projectInfo = '';
@@ -67,7 +67,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
 
     // Close connections
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     // Print status
     console.log(`  ${chalk.bold('Storage')}`);

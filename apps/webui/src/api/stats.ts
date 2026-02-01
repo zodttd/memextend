@@ -35,11 +35,11 @@ statsRouter.get('/', async (req: Request, res: Response) => {
     const { SQLiteStorage, LanceDBStorage, isModelAvailable } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(req.app.locals.dbPath);
-    const lancedb = await LanceDBStorage.create(req.app.locals.vectorsPath);
+    const vectorStore = await LanceDBStorage.create(req.app.locals.vectorsPath);
 
     // Get counts
     const memoryCount = sqlite.getMemoryCount();
-    const vectorCount = await lancedb.getVectorCount();
+    const vectorCount = await vectorStore.getVectorCount();
 
     // Get global profiles
     const globalProfiles = sqlite.getGlobalProfiles(100);
@@ -100,7 +100,7 @@ statsRouter.get('/', async (req: Request, res: Response) => {
     const recentMemories = memories.filter(m => new Date(m.createdAt) >= sevenDaysAgo);
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
 
     res.json({
       overview: {

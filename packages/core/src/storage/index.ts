@@ -2,5 +2,8 @@
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
 export { SQLiteStorage } from './sqlite.js';
-export { LanceDBStorage } from './lancedb.js';
-export type { VectorSearchResult } from './lancedb.js';
+export { SqliteVecStorage } from './sqlite-vec.js';
+export type { VectorSearchResult } from './sqlite-vec.js';
+
+// Legacy alias for backwards compatibility
+export { SqliteVecStorage as LanceDBStorage } from './sqlite-vec.js';

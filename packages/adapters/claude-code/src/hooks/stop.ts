@@ -99,7 +99,7 @@ async function main(): Promise<void> {
 
     // Initialize storage
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
 
     // Ensure project is registered
     const project = sqlite.getProject(projectId);
@@ -154,7 +154,7 @@ async function main(): Promise<void> {
 
       // Generate and store embedding
       const vector = await embedder.embed(content);
-      await lancedb.insertVector(memoryId, vector);
+      await vectorStore.insertVector(memoryId, vector);
     }
 
     // Deduplicate highly similar memories to save space
@@ -163,7 +163,7 @@ async function main(): Promise<void> {
 
     if (dedupeOnPrune) {
       const dedupedIds = await deduplicateStoredMemories(
-        sqlite, lancedb, projectId, dedupeThreshold
+        sqlite, vectorStore, projectId, dedupeThreshold
       );
       if (dedupedIds.length > 0) {
         log('Stop', `Deduplicated ${dedupedIds.length} similar memories`);
@@ -187,20 +187,14 @@ async function main(): Promise<void> {
 
         // Also delete from vector store
         for (const id of pruneResult.deletedIds) {
-          await lancedb.deleteVector(id);
+          await vectorStore.deleteVector(id);
         }
       }
     }
 
-    // Optimize LanceDB to prevent version bloat (safe here - no concurrent queries)
-    const optimizeResult = await lancedb.optimize();
-    if (optimizeResult && (optimizeResult.compacted > 0 || optimizeResult.pruned > 0)) {
-      log('Stop', `Optimized LanceDB: ${optimizeResult.compacted} files compacted, ${optimizeResult.pruned} versions pruned`);
-    }
-
     // Close storage and embedder
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
 
     log('Stop', `SUCCESS: Saved ${captures.length} memories`);
@@ -248,7 +242,7 @@ function outputResult(result: HookOutput): void {
  */
 async function deduplicateStoredMemories(
   sqlite: SQLiteStorage,
-  lancedb: LanceDBStorage,
+  vectorStore: LanceDBStorage,
   projectId: string,
   threshold: number
 ): Promise<string[]> {
@@ -261,7 +255,7 @@ async function deduplicateStoredMemories(
 
   // Get vectors for all memories
   const memoryIds = memories.map(m => m.id);
-  const vectors = await lancedb.getVectorsByIds(memoryIds);
+  const vectors = await vectorStore.getVectorsByIds(memoryIds);
 
   if (vectors.size < 2) return deletedIds;
 
@@ -292,7 +286,7 @@ async function deduplicateStoredMemories(
     } else {
       // Delete this duplicate
       sqlite.deleteMemory(memory.id);
-      await lancedb.deleteVector(memory.id);
+      await vectorStore.deleteVector(memory.id);
       deletedIds.push(memory.id);
     }
   }

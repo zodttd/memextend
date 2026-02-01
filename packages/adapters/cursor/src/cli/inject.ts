@@ -194,11 +194,11 @@ async function main(): Promise<void> {
 
   // Initialize storage
   const sqlite = new SQLiteStorage(DB_PATH);
-  const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+  const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
   const embedder = await createEmbedFunction(MODELS_PATH);
 
   try {
-    const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery, {
+    const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery, {
       defaultLimit: options.limit ?? 0,
       defaultRecentDays: options.days ?? 0,
     });
@@ -269,7 +269,7 @@ async function main(): Promise<void> {
   } finally {
     // Cleanup
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
   }
 }

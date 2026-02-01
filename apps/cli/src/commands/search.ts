@@ -27,11 +27,11 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
     const { SQLiteStorage, LanceDBStorage, MemoryRetriever, createEmbedFunction, getProjectId } = await import('@memextend/core');
 
     const sqlite = new SQLiteStorage(DB_PATH);
-    const lancedb = await LanceDBStorage.create(VECTORS_PATH);
+    const vectorStore = await LanceDBStorage.create(VECTORS_PATH);
 
     // Create embedding function (uses real model if available)
     const embedder = await createEmbedFunction(MODELS_PATH);
-    const retriever = new MemoryRetriever(sqlite, lancedb, embedder.embedQuery);
+    const retriever = new MemoryRetriever(sqlite, vectorStore, embedder.embedQuery);
 
     const limit = parseInt(options.limit ?? '10', 10);
     let projectId: string | undefined;
@@ -60,7 +60,7 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
       });
 
       sqlite.close();
-      await lancedb.close();
+      await vectorStore.close();
       await embedder.close();
       return;
     }
@@ -84,7 +84,7 @@ export async function searchCommand(query: string, options: SearchOptions): Prom
     }
 
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await embedder.close();
 
   } catch (error) {

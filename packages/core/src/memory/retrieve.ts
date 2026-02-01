@@ -2,10 +2,18 @@
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
 import type { SQLiteStorage } from '../storage/sqlite.js';
-import type { LanceDBStorage } from '../storage/lancedb.js';
+import type { VectorSearchResult } from '../storage/sqlite-vec.js';
 import type { Memory, SearchResult, RetrievalOptions, GlobalProfile } from './types.js';
 
 export type EmbedFunction = (text: string) => Promise<number[]>;
+
+// Interface for vector storage - works with SqliteVecStorage or any compatible implementation
+export interface VectorStorage {
+  search(vector: number[], limit?: number): Promise<VectorSearchResult[]>;
+  insertVector(id: string, vector: number[]): Promise<void>;
+  deleteVector(id: string): Promise<void>;
+  close(): Promise<void>;
+}
 
 export interface MemoryRetrieverOptions {
   defaultLimit?: number;
@@ -15,18 +23,18 @@ export interface MemoryRetrieverOptions {
 
 export class MemoryRetriever {
   private sqlite: SQLiteStorage;
-  private lancedb: LanceDBStorage;
+  private vectorStore: VectorStorage;
   private embed: EmbedFunction;
   private options: Required<MemoryRetrieverOptions>;
 
   constructor(
     sqlite: SQLiteStorage,
-    lancedb: LanceDBStorage,
+    vectorStore: VectorStorage,
     embed: EmbedFunction,
     options: MemoryRetrieverOptions = {}
   ) {
     this.sqlite = sqlite;
-    this.lancedb = lancedb;
+    this.vectorStore = vectorStore;
     this.embed = embed;
     this.options = {
       defaultLimit: options.defaultLimit ?? 0, // 0 = unlimited
@@ -44,12 +52,12 @@ export class MemoryRetriever {
   }
 
   /**
-   * Vector similarity search using LanceDB
+   * Vector similarity search
    */
   async vectorSearch(query: string, options: RetrievalOptions = {}): Promise<SearchResult[]> {
     const limit = options.limit ?? this.options.defaultLimit;
     const queryVector = await this.embed(query);
-    const vectorResults = await this.lancedb.search(queryVector, limit * 2);
+    const vectorResults = await this.vectorStore.search(queryVector, limit * 2);
 
     const results: SearchResult[] = [];
     for (const vr of vectorResults) {

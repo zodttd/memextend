@@ -293,7 +293,7 @@ memextend uninstall -h              # Show uninstall options (--force, --keep-da
 memextend/
 ├── packages/
 │   ├── core/                   # Storage, embedding, memory operations
-│   │   ├── storage/           # SQLite (FTS5) + LanceDB
+│   │   ├── storage/           # SQLite (FTS5) + sqlite-vec
 │   │   ├── embedding/         # Local nomic-embed-text model
 │   │   └── memory/            # Capture, retrieve, types
 │   └── adapters/
@@ -309,7 +309,7 @@ memextend/
 
 - **Language**: TypeScript
 - **Text Search**: SQLite with FTS5
-- **Vector Search**: LanceDB
+- **Vector Search**: sqlite-vec
 - **Embeddings**: node-llama-cpp with nomic-embed-text
 - **MCP**: @modelcontextprotocol/sdk
 - **Testing**: Vitest

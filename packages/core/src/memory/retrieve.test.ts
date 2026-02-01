@@ -7,13 +7,13 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { MemoryRetriever, formatContextForInjection } from './retrieve.js';
 import { SQLiteStorage } from '../storage/sqlite.js';
-import { LanceDBStorage } from '../storage/lancedb.js';
+import { SqliteVecStorage } from '../storage/sqlite-vec.js';
 import type { Memory, GlobalProfile } from './types.js';
 
 describe('MemoryRetriever', () => {
   let tempDir: string;
   let sqlite: SQLiteStorage;
-  let lancedb: LanceDBStorage;
+  let vectorStore: SqliteVecStorage;
   let retriever: MemoryRetriever;
 
   // Mock embedding function for tests
@@ -30,16 +30,16 @@ describe('MemoryRetriever', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), 'memextend-retrieve-test-'));
     sqlite = new SQLiteStorage(join(tempDir, 'test.db'));
-    lancedb = await LanceDBStorage.create(join(tempDir, 'vectors'));
-    retriever = new MemoryRetriever(sqlite, lancedb, mockEmbed);
+    vectorStore = await SqliteVecStorage.create(join(tempDir, 'vectors.db'));
+    retriever = new MemoryRetriever(sqlite, vectorStore, mockEmbed);
 
     // Seed test data
-    await seedTestMemories(sqlite, lancedb, mockEmbed);
+    await seedTestMemories(sqlite, vectorStore, mockEmbed);
   });
 
   afterEach(async () => {
     sqlite.close();
-    await lancedb.close();
+    await vectorStore.close();
     await rm(tempDir, { recursive: true });
   });
 
@@ -151,7 +151,7 @@ describe('formatContextForInjection', () => {
 // Helper functions
 async function seedTestMemories(
   sqlite: SQLiteStorage,
-  lancedb: LanceDBStorage,
+  vectorStore: SqliteVecStorage,
   embed: (text: string) => Promise<number[]>
 ) {
   const memories: Memory[] = [
@@ -190,7 +190,7 @@ async function seedTestMemories(
   for (const memory of memories) {
     sqlite.insertMemory(memory);
     const vector = await embed(memory.content);
-    await lancedb.insertVector(memory.id, vector);
+    await vectorStore.insertVector(memory.id, vector);
   }
 }
 
