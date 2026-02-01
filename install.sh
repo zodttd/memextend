@@ -242,7 +242,8 @@ select_adapters() {
     echo -e "  1) Claude Code  ${CC_DISPLAY} - Anthropic's Claude Code CLI ${GREEN}(recommended)${NC}"
     echo -e "  2) OpenCode     ${OC_DISPLAY} - anomalyco/opencode AI coding agent ${YELLOW}(experimental)${NC}"
     echo -e "  3) Cursor       ${CU_DISPLAY} - Cursor IDE ${YELLOW}(experimental)${NC}"
-    echo -e "  4) None         - Install core only, configure manually later"
+    echo -e "  4) All          - Install all adapters"
+    echo -e "  5) None         - Install core only, configure manually later"
     echo ""
 
     # Show existing adapters if any
@@ -255,7 +256,7 @@ select_adapters() {
     echo ""
 
     while true; do
-        prompt "Select adapter(s) [1-4]: "
+        prompt "Select adapter(s) [1-5]: "
         read -r choices </dev/tty
 
         SELECTED_ADAPTERS=""
@@ -280,11 +281,15 @@ select_adapters() {
                     SELECTED_ADAPTERS="$SELECTED_ADAPTERS cursor"
                     ;;
                 4)
+                    SELECTED_ADAPTERS="claude-code opencode cursor"
+                    break 2
+                    ;;
+                5)
                     SELECTED_ADAPTERS="none"
                     break 2
                     ;;
                 *)
-                    warn "Invalid option: $choice. Please enter numbers 1-4."
+                    warn "Invalid option: $choice. Please enter numbers 1-5."
                     valid=false
                     break
                     ;;
