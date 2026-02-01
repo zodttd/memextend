@@ -62,9 +62,9 @@ const DEFAULT_CONFIG: MemextendConfig = {
     compactMaxChars: 2000
   },
   storage: {
-    maxMemoriesPerProject: 500,
-    maxTotalMemories: 5000,
-    deduplicateOnPrune: true
+    maxMemoriesPerProject: 20000,
+    maxTotalMemories: 0,
+    deduplicateOnPrune: false
   },
   debug: false
 };
