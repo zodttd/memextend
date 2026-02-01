@@ -1,6 +1,10 @@
 // @memextend/cursor
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
 /**
  * Cursor Adapter for memextend
  *
@@ -15,8 +19,12 @@
  * See README.md for setup instructions.
  */
 
+// Read version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+
 export const ADAPTER_NAME = 'cursor';
-export const ADAPTER_VERSION = '0.3.1';
+export const ADAPTER_VERSION = pkg.version;
 export const ADAPTER_STATUS = 'beta';
 
 export * from './mcp/index.js';

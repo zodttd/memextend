@@ -1,12 +1,17 @@
 // apps/cli/src/commands/init.ts
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { mkdir, writeFile, readFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { homedir } from 'os';
+import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import ora from 'ora';
+
+// Read version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf-8'));
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const CONFIG_PATH = join(MEMEXTEND_DIR, 'config.json');
@@ -113,7 +118,7 @@ interface InitOptions {
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
-  console.log(chalk.bold('\n  memextend v0.3.1\n'));
+  console.log(chalk.bold(`\n  memextend v${pkg.version}\n`));
 
   if (options.manual) {
     printManualInstructions();

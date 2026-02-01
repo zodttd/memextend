@@ -29,16 +29,11 @@ const PACKAGE_JSON_FILES = [
   'apps/webui/package.json',
 ];
 
-// Files with hardcoded version strings
+// Files with hardcoded version strings that can't read from package.json
+// Note: Most source files now read version from package.json at runtime or build time
+// Only shell scripts and similar need explicit version strings
 const VERSION_STRING_FILES = [
   { file: 'install.sh', pattern: /^VERSION="[\d.]+"$/m, replacement: (v) => `VERSION="${v}"` },
-  { file: 'apps/cli/src/index.ts', pattern: /\.version\('[\d.]+'\)/, replacement: (v) => `.version('${v}')` },
-  { file: 'apps/cli/src/commands/init.ts', pattern: /memextend v[\d.]+/, replacement: (v) => `memextend v${v}` },
-  { file: 'packages/adapters/claude-code/src/mcp/server.ts', pattern: /version: '[\d.]+'/, replacement: (v) => `version: '${v}'` },
-  { file: 'packages/adapters/cursor/src/mcp/server.ts', pattern: /version: '[\d.]+'/, replacement: (v) => `version: '${v}'` },
-  { file: 'packages/adapters/opencode/src/mcp/server.ts', pattern: /version: '[\d.]+'/, replacement: (v) => `version: '${v}'` },
-  { file: 'packages/adapters/cursor/src/index.ts', pattern: /ADAPTER_VERSION = '[\d.]+'/, replacement: (v) => `ADAPTER_VERSION = '${v}'` },
-  { file: 'packages/adapters/opencode/src/index.ts', pattern: /ADAPTER_VERSION = '[\d.]+'/, replacement: (v) => `ADAPTER_VERSION = '${v}'` },
 ];
 
 // Update a package.json file

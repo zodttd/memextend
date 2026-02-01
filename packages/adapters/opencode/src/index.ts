@@ -1,6 +1,10 @@
 // packages/adapters/opencode/src/index.ts
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
 /**
  * OpenCode Adapter for memextend
  *
@@ -27,8 +31,12 @@
  * GitHub: https://github.com/anomalyco/opencode
  */
 
+// Read version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+
 export const ADAPTER_NAME = 'opencode';
-export const ADAPTER_VERSION = '0.3.1';
+export const ADAPTER_VERSION = pkg.version;
 export const ADAPTER_STATUS = 'implemented';
 
 // Export MCP server utilities

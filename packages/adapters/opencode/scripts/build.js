@@ -5,10 +5,15 @@ import { build } from 'esbuild';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { mkdir } from 'fs/promises';
+import { readFileSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(__dirname, '..', 'src');
 const distDir = join(__dirname, '..', 'dist');
+
+// Read version from root package.json
+const rootPkg = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', '..', 'package.json'), 'utf-8'));
+const version = rootPkg.version;
 
 const commonOptions = {
   bundle: true,
@@ -19,6 +24,9 @@ const commonOptions = {
   // These are native modules or have complex dependencies
   external: ['better-sqlite3', 'node-llama-cpp', 'sqlite-vec'],
   logLevel: 'warning',
+  define: {
+    'MEMEXTEND_VERSION': JSON.stringify(version),
+  },
 };
 
 async function buildMCP() {

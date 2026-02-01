@@ -110,10 +110,13 @@ async function getStorage(): Promise<{
   return { sqlite, vectorStore, retriever, embedder };
 }
 
+// Version injected at build time by esbuild
+declare const MEMEXTEND_VERSION: string;
+
 const server = new Server(
   {
     name: 'memextend',
-    version: '0.3.1',
+    version: MEMEXTEND_VERSION,
   },
   {
     capabilities: {

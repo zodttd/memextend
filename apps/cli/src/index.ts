@@ -3,6 +3,9 @@
 // Copyright (c) 2026 ZodTTD LLC. MIT License.
 
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { initCommand } from './commands/init.js';
 import { statusCommand } from './commands/status.js';
 import { searchCommand } from './commands/search.js';
@@ -15,12 +18,16 @@ import { webuiCommand } from './commands/webui.js';
 import { uninstallCommand } from './commands/uninstall.js';
 import { saveCommand } from './commands/save.js';
 
+// Read version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+
 const program = new Command();
 
 program
   .name('memextend')
   .description('Extend your AI coding assistant\'s memory. Free, local, private.')
-  .version('0.3.1');
+  .version(pkg.version);
 
 program
   .command('init')
