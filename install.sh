@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.15"
+VERSION="0.3.16"
 
 # Colors
 RED='\033[0;31m'
@@ -44,11 +44,19 @@ SELECTED_ADAPTERS=""
 EXISTING_ADAPTERS=""
 
 # Print banner
+# Calculate padding for version string (box is 39 chars inside)
+VERSION_STR="v${VERSION}"
+VERSION_LEN=${#VERSION_STR}
+TOTAL_PADDING=$((37 - VERSION_LEN))
+LEFT_PADDING=$((TOTAL_PADDING / 2))
+RIGHT_PADDING=$((TOTAL_PADDING - LEFT_PADDING))
+VERSION_LINE=$(printf "%${LEFT_PADDING}s%s%${RIGHT_PADDING}s" "" "$VERSION_STR" "")
+
 echo ""
 echo -e "${CYAN}${BOLD}  ╔═══════════════════════════════════════╗${NC}"
 echo -e "${CYAN}${BOLD}  ║         memextend installer           ║${NC}"
 echo -e "${CYAN}${BOLD}  ║   Free, local AI memory extension     ║${NC}"
-echo -e "${CYAN}${BOLD}  ║               v${VERSION}                  ║${NC}"
+echo -e "${CYAN}${BOLD}  ║ ${VERSION_LINE} ║${NC}"
 echo -e "${CYAN}${BOLD}  ║   by ZodTTD  •  www.zodttd.com        ║${NC}"
 echo -e "${CYAN}${BOLD}  ╚═══════════════════════════════════════╝${NC}"
 echo ""
