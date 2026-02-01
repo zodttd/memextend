@@ -11,7 +11,7 @@
 set -e
 
 # Version
-VERSION="0.3.11"
+VERSION="0.3.12"
 
 # Colors
 RED='\033[0;31m'
@@ -327,9 +327,6 @@ stop_webui() {
 install_memextend() {
     echo ""
     info "Installing memextend..."
-
-    # Stop webui before updating files
-    stop_webui
 
     if [ -d "$INSTALL_DIR/repo" ]; then
         info "Updating existing installation..."
@@ -742,6 +739,9 @@ EOF
 
 # Configure Claude Code adapter (main entry point)
 configure_claude_code() {
+    # Stop webui before configuring (it uses claude-code files)
+    stop_webui
+
     select_claude_config_mode
 
     case $CLAUDE_CONFIG_MODE in
