@@ -17,7 +17,8 @@
     "lint": "eslint . --ext .ts",
     "clean": "rm -rf packages/*/dist packages/adapters/*/dist apps/*/dist",
     "version:bump": "node scripts/bump-version.js",
-    "version:sync": "node scripts/bump-version.js"
+    "version:sync": "node scripts/sync-version.js",
+    "publish:all": "node scripts/publish.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
