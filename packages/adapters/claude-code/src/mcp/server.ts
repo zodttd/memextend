@@ -7,12 +7,77 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { homedir } from 'os';
+import { execSync } from 'child_process';
 
 import { SQLiteStorage, LanceDBStorage, MemoryRetriever, createEmbedFunction } from '@memextend/core';
+
+/**
+ * Get the current project ID based on working directory.
+ * Tries multiple methods to determine the project context.
+ */
+function getCurrentProjectId(): { id: string; name: string; path: string } {
+  // Try environment variable first (if Claude Code ever provides one)
+  const envCwd = process.env.CLAUDE_CODE_CWD || process.env.CLAUDE_CWD || process.env.PWD;
+
+  if (envCwd && existsSync(envCwd)) {
+    // Try to get git root for consistent project identification
+    try {
+      const gitRoot = execSync('git rev-parse --show-toplevel', {
+        cwd: envCwd,
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      }).trim();
+
+      return {
+        id: createHash('sha256').update(gitRoot).digest('hex').slice(0, 16),
+        name: basename(gitRoot),
+        path: gitRoot
+      };
+    } catch {
+      // Not a git repo, use the directory directly
+      return {
+        id: createHash('sha256').update(envCwd).digest('hex').slice(0, 16),
+        name: basename(envCwd),
+        path: envCwd
+      };
+    }
+  }
+
+  // Fallback: use process.cwd() which might work in some cases
+  const cwd = process.cwd();
+  if (cwd && cwd !== '/' && !cwd.includes('.cache')) {
+    try {
+      const gitRoot = execSync('git rev-parse --show-toplevel', {
+        cwd,
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      }).trim();
+
+      return {
+        id: createHash('sha256').update(gitRoot).digest('hex').slice(0, 16),
+        name: basename(gitRoot),
+        path: gitRoot
+      };
+    } catch {
+      return {
+        id: createHash('sha256').update(cwd).digest('hex').slice(0, 16),
+        name: basename(cwd),
+        path: cwd
+      };
+    }
+  }
+
+  // Ultimate fallback
+  return {
+    id: 'default',
+    name: 'Unknown Project',
+    path: ''
+  };
+}
 
 const MEMEXTEND_DIR = join(homedir(), '.memextend');
 const DB_PATH = join(MEMEXTEND_DIR, 'memextend.db');
@@ -81,7 +146,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'memextend_save',
-        description: 'Save a memory for this project. Use this to remember important decisions, patterns, or context.',
+        description: 'Save a memory for this project. Use this to remember important decisions, patterns, or context. IMPORTANT: You must provide the projectId - use the project/repo name from the current working directory (e.g., "memextend", "my-app").',
         inputSchema: {
           type: 'object',
           properties: {
@@ -91,10 +156,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             projectId: {
               type: 'string',
-              description: 'Project ID (optional, defaults to current project)',
+              description: 'Project name/identifier (REQUIRED - use the repo or folder name, e.g., "memextend", "my-project")',
             },
           },
-          required: ['content'],
+          required: ['content', 'projectId'],
         },
       },
       {
@@ -153,7 +218,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const query = args?.query as string;
         const limit = (args?.limit as number) ?? 5;
 
-        const results = await retriever.hybridSearch(query, { limit });
+        // Try to scope search to current project
+        const detected = getCurrentProjectId();
+        const projectId = detected.id !== 'default' ? detected.id : undefined;
+
+        const results = await retriever.hybridSearch(query, { limit, projectId });
 
         if (results.length === 0) {
           return { content: [{ type: 'text', text: 'No memories found matching your query.' }] };
@@ -170,7 +239,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'memextend_save': {
         const { sqlite, lancedb, embedder } = await getStorage();
         const content = args?.content as string;
-        const projectId = args?.projectId as string ?? 'default';
+        const projectIdArg = args?.projectId as string;
+
+        // Validate projectId is provided
+        if (!projectIdArg || projectIdArg.trim() === '') {
+          return { content: [{ type: 'text', text: 'projectId is required. Please provide the project/repo name (e.g., "memextend", "my-app").' }], isError: true };
+        }
+
+        // Use the project name as-is for display, and create a hash-based ID for storage
+        const projectName = projectIdArg.trim();
+        const projectId = createHash('sha256').update(projectName.toLowerCase()).digest('hex').slice(0, 16);
+
+        // Ensure project is registered
+        const existing = sqlite.getProject(projectId);
+        if (!existing) {
+          sqlite.insertProject({
+            id: projectId,
+            name: projectName,
+            path: '', // No path available from MCP
+            createdAt: new Date().toISOString()
+          });
+        }
 
         // Validate content
         if (!content || content.length < 10) {
@@ -195,7 +284,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const vector = await embedder.embed(content);
         await lancedb.insertVector(memoryId, vector);
 
-        return { content: [{ type: 'text', text: `Memory saved with ID: ${memoryId}` }] };
+        return { content: [{ type: 'text', text: `Memory saved to "${projectName}" with ID: ${memoryId}` }] };
       }
 
       case 'memextend_save_global': {
@@ -241,6 +330,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const memoryCount = sqlite.getMemoryCount();
         const vectorCount = await lancedb.getVectorCount();
 
+        // Debug: show project detection info
+        const detected = getCurrentProjectId();
+
         return {
           content: [{
             type: 'text',
@@ -249,7 +341,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 - Vector embeddings: ${vectorCount}
 - Using real embeddings: ${embedder.isReal ? 'Yes' : 'No (fallback mode)'}
 - Database: ${DB_PATH}
-- Vectors: ${VECTORS_PATH}`
+- Vectors: ${VECTORS_PATH}
+
+Project Detection:
+- Detected ID: ${detected.id}
+- Detected name: ${detected.name}
+- Detected path: ${detected.path || '(none)'}
+- PWD env: ${process.env.PWD || '(not set)'}
+- CLAUDE_CWD env: ${process.env.CLAUDE_CWD || '(not set)'}
+- CLAUDE_CODE_CWD env: ${process.env.CLAUDE_CODE_CWD || '(not set)'}
+- process.cwd(): ${process.cwd()}`
           }]
         };
       }
