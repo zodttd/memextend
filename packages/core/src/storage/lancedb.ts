@@ -93,19 +93,24 @@ export class LanceDBStorage {
     const result = new Map<string, number[]>();
     if (!this.table || ids.length === 0) return result;
 
-    // Build filter for multiple IDs
-    // Sanitize IDs to prevent injection
-    const sanitizedIds = ids.map(id => id.replace(/'/g, "''"));
-    const filter = sanitizedIds.map(id => `id = '${id}'`).join(' OR ');
+    // Batch queries to avoid extremely long WHERE clauses
+    const BATCH_SIZE = 100;
 
     try {
-      const rows = await this.table
-        .query()
-        .where(filter)
-        .toArray();
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        // Sanitize IDs to prevent injection
+        const sanitizedIds = batch.map(id => id.replace(/'/g, "''"));
+        const filter = sanitizedIds.map(id => `id = '${id}'`).join(' OR ');
 
-      for (const row of rows as Array<Record<string, unknown>>) {
-        result.set(row.id as string, row.vector as number[]);
+        const rows = await this.table
+          .query()
+          .where(filter)
+          .toArray();
+
+        for (const row of rows as Array<Record<string, unknown>>) {
+          result.set(row.id as string, row.vector as number[]);
+        }
       }
     } catch {
       // Return empty map on error
