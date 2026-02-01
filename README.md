@@ -18,13 +18,26 @@ memextend gives Claude Code (and other AI coding tools) persistent memory across
 
 ## Quick Start
 
-### One-Line Install
+### One-Line Install (Recommended)
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/zodttd/memextend/main/install.sh)"
 ```
 
-### Manual Install
+### Install via npm
+
+```bash
+npm install -g memextend
+memextend init
+```
+
+Or use without installing:
+
+```bash
+npx memextend init
+```
+
+### Manual Install (Development)
 
 ```bash
 git clone https://github.com/zodttd/memextend.git
