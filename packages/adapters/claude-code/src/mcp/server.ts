@@ -113,7 +113,7 @@ async function getStorage(): Promise<{
 const server = new Server(
   {
     name: 'memextend',
-    version: '0.1.6',
+    version: '0.1.7',
   },
   {
     capabilities: {

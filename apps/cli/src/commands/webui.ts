@@ -29,6 +29,7 @@ function isWebuiProcess(pid: number): boolean {
     try {
       const cmd = execSync(`ps -p ${pid} -o command=`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
       // Check if it's a node process running memextend webui
+      // The full path contains "memextend" (e.g., /Users/.../memextend/apps/cli/dist/index.js webui)
       return cmd.includes('memextend') && cmd.includes('webui');
     } catch {
       // ps command failed - process might not exist or we can't read it
@@ -132,7 +133,13 @@ async function startWebui(options: WebuiOptions): Promise<void> {
     return;
   }
 
-  // Check if already running
+  // Run in foreground mode (blocking) - skip PID check since this is called by the background spawner
+  if (options.foreground) {
+    await runForeground(port, host);
+    return;
+  }
+
+  // Check if already running (only for background mode)
   if (existsSync(PID_FILE)) {
     const existingPid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
     if (isWebuiProcess(existingPid)) {
@@ -144,12 +151,6 @@ async function startWebui(options: WebuiOptions): Promise<void> {
     unlinkSync(PID_FILE);
   }
 
-  // Run in foreground mode (blocking)
-  if (options.foreground) {
-    await runForeground(port, host);
-    return;
-  }
-
   // Run in background mode (default)
   await runBackground(port, host);
 }
@@ -157,11 +158,18 @@ async function startWebui(options: WebuiOptions): Promise<void> {
 async function runBackground(port: number, host: string): Promise<void> {
   // Get path to this script for spawning
   const cliPath = join(__dirname, '..', 'index.js');
+  const logFile = join(MEMEXTEND_DIR, 'webui.log');
+
+  // Open log file for stdout/stderr
+  const { openSync } = await import('fs');
+  const out = openSync(logFile, 'a');
+  const err = openSync(logFile, 'a');
 
   // Spawn a detached process running webui in foreground mode
   const child = spawn('node', [cliPath, 'webui', '--foreground', '--port', String(port), '--host', host], {
     detached: true,
-    stdio: 'ignore',
+    stdio: ['ignore', out, err],
+    cwd: join(__dirname, '..', '..'),  // Set cwd to apps/cli/dist
     env: { ...process.env }
   });
 
