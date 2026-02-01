@@ -130,19 +130,22 @@ export class LanceDBStorage {
    * Optimize the LanceDB table to reduce storage.
    * This compacts files, prunes old versions, and optimizes indices.
    * Should be called periodically (e.g., after many inserts or on cleanup command).
+   *
+   * @param cleanupOlderThan - Date before which old versions should be pruned (default: now)
    */
-  async optimize(): Promise<{ compacted: number; pruned: number } | null> {
+  async optimize(cleanupOlderThan?: Date): Promise<{ compacted: number; pruned: number } | null> {
     if (!this.table) return null;
 
     try {
-      // The optimize method exists in the native module but isn't in TypeScript types
+      // Use type assertion since optimize isn't in the type definitions
       const table = this.table as unknown as {
-        optimize(): Promise<{
+        optimize(options?: { cleanupOlderThan?: Date }): Promise<{
           compaction?: { filesRemoved?: number };
           prune?: { versionsRemoved?: number };
         }>;
       };
-      const stats = await table.optimize();
+      // Default to now to prune all old versions immediately
+      const stats = await table.optimize({ cleanupOlderThan: cleanupOlderThan ?? new Date() });
       return {
         compacted: stats?.compaction?.filesRemoved ?? 0,
         pruned: stats?.prune?.versionsRemoved ?? 0,
